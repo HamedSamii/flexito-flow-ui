@@ -1,13 +1,13 @@
-// Flexito flow builder v8.4: v8.3 + version marker kept in sync (window.__fxVersion / <html data-fx> / console banner all read the same string now)
+// Flexito flow builder v8.7: v8.6 + every button (primary buttons, pagination active state, Sub Flows Create-Folder / Generate-by-AI buttons) recoloured purple #A684FF instead of mint; success buttons and switches/toggles stay mint as a status accent
 // Full replacement file. Do not load alongside an earlier fx-flow.js. The Sub Flows module (bottom of file) is inert on every other page.
 // Menu previews verified by user; combined bundle requires platform smoke test.
 /* ---- staging gate: the NEW look (Sub Flows page, core layer, Insights, Inbox) only applies to the bot ids listed here.
        Add more ids to widen it; set the list to [] to apply everywhere. window.__fxAllow can override it from the console. ---- */
 try{!function(){
-  var ALLOW=window.__fxAllow||['f153677'];
+  var ALLOW=window.__fxAllow||[];   /* [] = the new look applies to every bot/workspace on the platform */
   window.__fxGate=function(){return !ALLOW.length||ALLOW.some(function(id){return location.href.indexOf(id)>-1})};
-  /* visible proof that THIS file is the one running: <html data-fx="8.4"> + a console line */
-  try{document.documentElement.setAttribute('data-fx','8.4');console.info('[fx] fx-flow v8.4 loaded | new look allowed for this bot:',window.__fxGate(),'|',location.href.split('#')[0].slice(-40))}catch(e){}
+  /* visible proof that THIS file is the one running: <html data-fx="8.7"> + a console line */
+  try{document.documentElement.setAttribute('data-fx','8.7');console.info('[fx] fx-flow v8.7 loaded | new look allowed for this bot:',window.__fxGate(),'|',location.href.split('#')[0].slice(-40))}catch(e){}
 }()}catch(e){console.error('[fx] module error',e&&e.stack||e)}
 try{!function(){
   if(window.__fxSoft6){console.warn('fx: an fx-flow script is already running on this page (older version still in the HTML Script field?). Remove that line, save, reload, then run this one.');return}window.__fxSoft6=1;
@@ -377,7 +377,7 @@ try{!function(){
 .fx-folders .flow-card-title .el-button{border:0!important;background:transparent!important;box-shadow:none!important;opacity:0;transition:opacity .15s;padding:6px!important}
 .fx-folders .flow-card:hover .el-button{opacity:1}
 /* create folder: icon only, label on hover */
-.fx-page .fx-folders .el-button.addbtn{position:absolute!important;top:83px;right:14px;z-index:5;width:32px;height:32px;margin:0!important;padding:0 8px!important;display:flex!important;align-items:center;justify-content:flex-start;overflow:hidden;white-space:nowrap;border:0!important;border-radius:10px!important;background:var(--m)!important;color:#04241D!important;font-size:12px!important;font-weight:700;transition:width .22s ease}
+.fx-page .fx-folders .el-button.addbtn{position:absolute!important;top:83px;right:14px;z-index:5;width:32px;height:32px;margin:0!important;padding:0 8px!important;display:flex!important;align-items:center;justify-content:flex-start;overflow:hidden;white-space:nowrap;border:0!important;border-radius:10px!important;background:var(--omni)!important;color:#fff!important;font-size:12px!important;font-weight:700;transition:width .22s ease}
 .fx-folders .addbtn i{display:none!important}
 .fx-folders .addbtn::before{content:'';flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:${foldPlus} center/contain no-repeat;mask:${foldPlus} center/contain no-repeat}
 .fx-folders .addbtn>span{font-size:0;opacity:0;margin-left:0;transition:opacity .15s .05s,margin .2s}
@@ -392,9 +392,9 @@ try{!function(){
 /* AI button: top of the rail, same navy as the side menu */
 .fx-page .fx-head .el-button.fx-ai{position:absolute!important;top:22px;left:14px;width:220px;height:46px!important;z-index:8;display:flex!important;align-items:center;justify-content:center;gap:8px;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--nav)!important;color:#fff!important;font-size:0!important;box-shadow:0 10px 24px -14px rgba(27,33,55,.7)!important;transition:background .15s,color .15s,transform .15s}
 .fx-head .el-button.fx-ai>*{display:none!important}
-.fx-head .el-button.fx-ai::before{content:'';flex:none;width:16px;height:16px;background:var(--m);-webkit-mask:${spark} center/contain no-repeat;mask:${spark} center/contain no-repeat}
+.fx-head .el-button.fx-ai::before{content:'';flex:none;width:16px;height:16px;background:var(--omni);-webkit-mask:${spark} center/contain no-repeat;mask:${spark} center/contain no-repeat}
 .fx-head .el-button.fx-ai::after{content:'${NAME}';font-size:14px;font-weight:600;line-height:1}
-.fx-page .fx-head .el-button.fx-ai:hover{background:var(--m)!important;color:#04241D!important;transform:translateY(-1px)}
+.fx-page .fx-head .el-button.fx-ai:hover{background:var(--omni)!important;color:#fff!important;transform:translateY(-1px)}
 .fx-head .el-button.fx-ai:hover::before{background:#04241D}
 /* toolbar */
 .fx-tools{display:flex!important;align-items:center;gap:10px;padding:8px 28px 18px!important;margin:0!important}
@@ -555,8 +555,10 @@ main.el-main,main.el-main.relative.p-0,section.el-container.modalContainer{backg
 .el-button.is-circle{border-radius:50%!important}
 .el-button--default{background:#fff!important;border-color:#E6EAF2!important;color:#0A0E1A!important}
 .el-button--default:hover,.el-button--default:focus{background:#F6F2FF!important;border-color:#A684FF!important;color:#6D4AE0!important}
-.el-button--primary,.el-button--success{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}
-.el-button--primary:hover,.el-button--primary:focus,.el-button--success:hover{background:#1DD3AB!important;border-color:#1DD3AB!important}
+.el-button--primary{background:#A684FF!important;border-color:#A684FF!important;color:#fff!important}
+.el-button--success{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}
+.el-button--primary:hover,.el-button--primary:focus{background:#8F66F2!important;border-color:#8F66F2!important}
+.el-button--success:hover{background:#1DD3AB!important;border-color:#1DD3AB!important}
 .el-button--danger{background:#FE4E51!important;border-color:#FE4E51!important;color:#fff!important}
 .el-input__inner,.el-textarea__inner{border-radius:12px!important;border-color:#E6EAF2!important;color:#0A0E1A!important}
 .el-input:not(.el-input--small):not(.el-input--mini) .el-input__inner{height:42px!important;line-height:42px!important}
@@ -587,7 +589,7 @@ main.el-main,main.el-main.relative.p-0,section.el-container.modalContainer{backg
 .el-table th,.el-table td{padding:14px 0!important}
 .el-table .cell{word-break:normal!important;overflow-wrap:anywhere!important}
 .el-button.is-disabled{opacity:.5!important;cursor:not-allowed!important}
-.el-button--primary:hover,.el-button--primary:focus{--fx-pbg:#1DD3AB}
+.el-button--primary:hover,.el-button--primary:focus{--fx-pbg:#8F66F2}
 *{scrollbar-width:thin!important;scrollbar-color:#D7DEEA transparent!important}
 .el-table td{border-bottom:1px solid #F1F4F9!important}
 .el-table--enable-row-hover .el-table__body tr:hover>td{background:#F4FCFA!important}
@@ -596,7 +598,7 @@ main.el-main,main.el-main.relative.p-0,section.el-container.modalContainer{backg
 .el-tabs__active-bar{background:linear-gradient(90deg,#24E4BB,#A684FF)!important;height:3px!important;border-radius:3px}
 .el-tabs__nav-wrap::after{background:#EEF1F6!important}
 .el-pagination.is-background .el-pager li,.el-pagination.is-background .btn-prev,.el-pagination.is-background .btn-next{border-radius:10px!important}
-.el-pagination.is-background .el-pager li:not(.disabled).active{background:#24E4BB!important;color:#04241D!important}
+.el-pagination.is-background .el-pager li:not(.disabled).active{background:#A684FF!important;color:#fff!important}
 .el-switch__core{background:#D7DEEA!important;border-color:transparent!important}
 .el-switch.is-checked .el-switch__core{background:#24E4BB!important;border-color:#24E4BB!important}
 .el-checkbox__inner{border-radius:6px!important}
@@ -838,10 +840,15 @@ ${SH} .el-dialog__footer{flex:none;padding:16px 28px 24px!important;border-top:1
   var off=function(){return window.__fxOff||/[?&#]fx=off/.test(location.href)};
   /* before the DOM exists we can only decide from the route: builder canvas (no hash) and Sub Flows keep their own looks */
   var earlyApp=function(){var h=location.hash;return !(!h||h==='#'||h==='#/'||/subflow/i.test(h))};
+  var onBuilder=function(){   /* the platform keeps a hidden .main-flow-builder node on EVERY page (display:none) - only count it when it is actually shown.
+                                 checked via computed display only: offsetParent is null for any position:fixed/absolute element too, which would misfire here */
+    var el=document.querySelector('.main-flow-builder,.fx-page');
+    return !!el&&getComputedStyle(el).display!=='none';
+  };
   var wanted=function(){
     if(off())return false;
     if(!document.body)return earlyApp();
-    if(document.querySelector('.main-flow-builder,.fx-page')||/subflow/i.test(location.hash))return false;   /* approved looks live elsewhere */
+    if(onBuilder()||/subflow/i.test(location.hash))return false;   /* approved looks live elsewhere */
     return !isDark();
   };
   var cards=function(){
@@ -851,8 +858,8 @@ ${SH} .el-dialog__footer{flex:none;padding:16px 28px 24px!important;border-top:1
       if(c.style.getPropertyValue('border-radius')==='18px'&&c.style.getPropertyPriority('border-radius')==='important')continue;
       for(var k in CARD)c.style.setProperty(k,CARD[k],'important')}
   };
-  var BTN={'background-color':'var(--fx-pbg,#24E4BB)','border-color':'var(--fx-pbg,#24E4BB)','color':'#04241D'};
-  var buttons=function(){   /* inline !important beats the platform theme's purple; hover colour comes from --fx-pbg */
+  var BTN={'background-color':'var(--fx-pbg,#A684FF)','border-color':'var(--fx-pbg,#A684FF)','color':'#fff'};
+  var buttons=function(){   /* inline !important pins our purple even where a CSS rule loses on specificity; hover colour comes from --fx-pbg */
     var list=document.querySelectorAll('.el-button--primary:not(.is-disabled)');
     for(var i=0;i<list.length;i++){var b=list[i];
       if(b.style.getPropertyValue('background-color')===BTN['background-color'])continue;
@@ -953,10 +960,10 @@ main.el-main.p-3{padding:24px 28px 0!important}
 .el-table td{border-bottom:1px solid #F1F4F9!important}
 .el-table--enable-row-hover .el-table__body tr:hover>td{background:#F4FCFA!important}
 .el-pagination.is-background .el-pager li,.el-pagination.is-background .btn-prev,.el-pagination.is-background .btn-next{border-radius:10px!important}
-.el-pagination.is-background .el-pager li:not(.disabled).active{background:#24E4BB!important;color:#04241D!important}
+.el-pagination.is-background .el-pager li:not(.disabled).active{background:#A684FF!important;color:#fff!important}
 .el-tabs__item.is-active{color:#0A0E1A!important}
 .el-tabs__active-bar{background:#24E4BB!important;height:3px!important;border-radius:3px}
-.el-button--primary{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important;border-radius:12px!important}
+.el-button--primary{background:#A684FF!important;border-color:#A684FF!important;color:#fff!important;border-radius:12px!important}
 .el-input__inner,.el-textarea__inner{border-radius:12px!important}
 `;
   var P='html.fx-insights.fx-insights body ';
