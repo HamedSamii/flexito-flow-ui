@@ -1,32 +1,71 @@
-// Flexito flow builder v6.5: compact cards, icon tile + title, dotted links with a travelling dot
+// Flexito flow builder v7.2: existing nodes/links + approved compact step menu and dropdowns
+// Full replacement file. Do not load alongside an earlier fx-flow.js.
+// Menu previews verified by user; combined bundle requires platform smoke test.
 !function(){
-  if(window.__fxSoft6)return;window.__fxSoft6=1;
+  if(window.__fxSoft6){console.warn('fx: an fx-flow script is already running on this page (older version still in the HTML Script field?). Remove that line, save, reload, then run this one.');return}window.__fxSoft6=1;
   var TEXT='#1E293B',RADIUS=10,STRIPE=3.5,LINK_W=3.6,DOT=14;   /* LINK_W = line thickness (2.4 thin, 3.6 medium, 4.5 bold) | DOT = travelling dot size */
   var GAP=Math.round(LINK_W*2.5*10)/10, RING=Math.max(2,LINK_W*.7);   /* dot spacing + end rings follow the thickness */
   var PORT=14;               /* size of the visible connection circles (ports) */
   var PORT_RINGS=true;       /* true = visible ring ports on nodes (drag from them to connect) | false = hidden ports */
+  var DEBUG=false;           /* true = print 'fx diag' / structure info to the console (for troubleshooting) */
+  var log=function(){if(DEBUG)console.log.apply(console,arguments)};
   var ICON_TILE=true;        /* small tinted icon tile next to the title */
   var ANIMATE=true;          /* travelling dot on every link */
   var PINGPONG=true;         /* true = goes and comes back | false = one direction */
   var PERIOD=3600;           /* ms for one full cycle */
 
-  var css=
-   '.flowbuilder-diagram{background:radial-gradient(900px 520px at 0% 0%,#E6FAF2,transparent 65%),radial-gradient(800px 480px at 100% 100%,#EAF0FF,transparent 65%),#F8FBFD!important}'+
-   '.main-flow-builder .flowbuilder-tip{background:#fff!important;color:#64748B!important;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;border-radius:0 0 14px 14px;box-shadow:0 8px 20px -10px rgba(15,23,42,.30)}'+
-   '.main-flow-builder .flowbuilder-actions{background:transparent!important}'+
-   '.main-flow-builder .flowbuilder-actions .el-button{border-radius:999px!important;font-weight:600;box-shadow:0 8px 18px -8px rgba(15,23,42,.35)}'+
-   '.main-flow-builder .flowbuilder-control-bar>div{border-radius:18px!important;border:1px solid rgba(15,23,42,.06);box-shadow:0 12px 30px -12px rgba(15,23,42,.28)}'+
-   '.main-flow-builder .flowbuilder-control-bar .el-button{border-radius:12px!important}'+
-   '.main-flow-builder .flowbuilder-control-bar .el-button:hover{background:rgba(128,128,128,.14)!important}'+
-   '.main-flow-builder #myOverviewDiv{background:#fff!important;border-radius:18px;overflow:hidden;border:1px solid rgba(15,23,42,.06);box-shadow:0 12px 30px -12px rgba(15,23,42,.28)}'+
-   '.main-flow-builder .el-popover.el-popper{border:0!important;border-radius:20px!important;box-shadow:0 22px 50px -18px rgba(15,23,42,.38)!important}'+
-   '.main-flow-builder .node-viewer{border-radius:24px 0 0 24px;overflow:hidden;box-shadow:-14px 0 40px -20px rgba(15,23,42,.30)}'+
-   '.main-flow-builder .node-viewer .el-card{border-radius:16px!important;border:1px solid rgba(15,23,42,.06)!important;box-shadow:none!important}'+
-   '.main-flow-builder .node-viewer .el-input__inner,.main-flow-builder .node-viewer .el-textarea__inner{border-radius:12px!important}'+
-   '.main-flow-builder .node-viewer .el-button{border-radius:999px!important;font-weight:600}'+
-   '.main-flow-builder .el-dialog:not(.is-fullscreen){border-radius:24px!important;overflow:hidden}'+
-   '.main-flow-builder .el-dialog .el-button{border-radius:999px!important}';
-  var st=document.createElement('style');st.id='fx-soft6';st.textContent=css;
+  var css=`
+/* Canvas controls retained; experimental node-panel/dialog styles excluded. */
+body:has(.main-flow-builder){--fx-mint:#24E4BB;--fx-mint-hover:#1DD3AB;--fx-mint-ink:#04241D;--fx-mint-soft:#E7FBF6;--fx-ink:#0A0E1A;--fx-label:#7F848D;--fx-line:#E6EAF2;--fx-divider:#F1F4F9;--fx-chip:#EEF2F9;--fx-off:#D7DEEA;--fx-green:#057A5E;--fx-font:'Inter','IBM Plex Sans Arabic','Segoe UI',system-ui,sans-serif}
+
+/* ---- canvas + top controls (Flexito product look: pale canvas, dotted grid, mint primary) ---- */
+.flowbuilder-diagram{background:radial-gradient(circle,#D3DCE8 1.1px,transparent 1.3px) 0 0/24px 24px,#F5FAFE!important}
+body:has(.main-flow-builder) .flowbuilder-tip{background:#fff!important;color:var(--fx-label)!important;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border-radius:0 0 12px 12px;box-shadow:0 8px 20px -12px rgba(10,14,26,.3)}
+body:has(.main-flow-builder) .flowbuilder-actions{background:transparent!important}
+body:has(.main-flow-builder) .flowbuilder-actions .el-button{border-radius:12px!important;font-weight:600!important;border:1px solid var(--fx-line)!important;background:#fff!important;color:var(--fx-ink)!important;box-shadow:0 6px 16px -10px rgba(10,14,26,.3)!important}
+body:has(.main-flow-builder) .flowbuilder-actions [data-tour-id="flow-btn-publish"]{background:var(--fx-mint)!important;border-color:var(--fx-mint)!important;color:var(--fx-mint-ink)!important}
+body:has(.main-flow-builder) .flowbuilder-control-bar>div{border-radius:14px!important;border:1px solid var(--fx-line)!important;box-shadow:0 10px 24px -14px rgba(10,14,26,.3)!important}
+body:has(.main-flow-builder) .flowbuilder-control-bar .el-button{border-radius:10px!important}
+body:has(.main-flow-builder) .flowbuilder-control-bar .el-button:hover{background:var(--fx-chip)!important}
+body:has(.main-flow-builder) #myOverviewDiv{background:#fff!important;border-radius:14px;overflow:hidden;border:1px solid var(--fx-line);box-shadow:0 10px 24px -14px rgba(10,14,26,.3)}
+
+
+/* Approved compact Add New Step and dropdown rows. */
+.view-panel-right > .el-popover:has(.next-step-row){width:280px!important;max-width:calc(100vw - 24px)!important;box-sizing:border-box!important;padding:16px!important;background:#fff!important;border:1px solid #E6EAF2!important;border-radius:20px!important;box-shadow:0 20px 60px -18px rgba(15,35,45,.25)!important;}
+.view-panel-right > .el-popover:has(.next-step-row) > .mb-1{position:relative;margin:0 0 10px!important;padding:4px 0 14px!important;border-bottom:1px solid #EEF2F6;gap:8px;color:#0A0E1A!important;font-size:14px!important;font-weight:700!important;}
+.view-panel-right > .el-popover:has(.next-step-row) > .mb-1::after{content:"";position:absolute;bottom:-1px;left:0;width:32px;height:3px;border-radius:3px;background:#24E4BB;}
+.view-panel-right > .el-popover:has(.next-step-row) > .mb-1 .el-button{padding:7px 10px!important;border:0!important;border-radius:8px!important;background:#F3F5F8!important;color:#667085!important;font-size:11px!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .el-scrollbar__wrap{max-height:min(65vh,420px)!important;margin:0!important;overflow:auto!important;scrollbar-width:thin;scrollbar-color:#D7DEEA transparent;}
+.view-panel-right > .el-popover:has(.next-step-row) .el-scrollbar__bar{display:none!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .el-scrollbar__view{display:block!important;padding:2px!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .el-scrollbar__view > .my-1{margin:3px 0!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-row{--step-color:#057A5E;--step-bg:#E6F8F2;position:relative!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;width:100%!important;height:52px!important;box-sizing:border-box!important;margin:0!important;padding:8px 12px!important;border:0!important;border-radius:12px!important;background:transparent!important;box-shadow:none!important;cursor:pointer;transition:background .15s;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-row:hover{background:#E7FBF6!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-row::after{content:"›";margin-left:auto;color:#057A5E;font:22px/1 sans-serif;opacity:0;transition:opacity .15s;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-row:hover::after{opacity:1;}
+.view-panel-right > .el-popover:has(.next-step-row) .message{--step-color:#526477;--step-bg:#EDF1F6;}
+.view-panel-right > .el-popover:has(.next-step-row) .question{--step-color:#2784D9;--step-bg:#EAF4FF;}
+.view-panel-right > .el-popover:has(.next-step-row) .action{--step-color:#B87B09;--step-bg:#FFF5DD;}
+.view-panel-right > .el-popover:has(.next-step-row) .condition{--step-color:#07876D;--step-bg:#E4F8F0;}
+.view-panel-right > .el-popover:has(.next-step-row) .randomizer{--step-color:#8651B5;--step-bg:#F3ECFA;}
+.view-panel-right > .el-popover:has(.next-step-row) .email{--step-color:#4971BB;--step-bg:#EDF2FC;}
+.view-panel-right > .el-popover:has(.next-step-row) .goto{--step-color:#BF489E;--step-bg:#FCECF7;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-icon{display:flex!important;align-items:center!important;justify-content:center!important;width:34px!important;height:34px!important;min-width:34px!important;flex:0 0 34px!important;padding:0!important;margin:0!important;border:0!important;border-radius:10px!important;background:var(--step-bg)!important;color:var(--step-color)!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-icon i{color:var(--step-color)!important;font-size:19px!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-node{position:relative!important;flex:1!important;min-width:0!important;width:auto!important;height:auto!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#243244!important;text-align:start!important;line-height:1.4!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-node .text-ellipsis{font-size:12px!important;font-weight:600!important;white-space:normal!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-node.pro{padding-right:28px!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .next-step-node.pro::after{top:50%!important;right:0!important;transform:translateY(-50%);font-size:8px!important;border-radius:4px!important;}
+.view-panel-right > .el-popover:has(.next-step-row) .popper__arrow{display:none!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown){background:#FFFFFF!important;border:1px solid #E4EBE8!important;border-radius:18px!important;box-shadow:0 24px 60px -20px rgba(16,42,35,.28),0 4px 12px rgba(16,42,35,.04)!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item){box-sizing:border-box!important;margin:4px 8px!important;padding:9px 12px!important;height:auto!important;min-height:38px!important;line-height:20px!important;border-radius:10px!important;font-size:12px!important;background:#F7F9FA!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item):not(.is-disabled):not(.text-danger){color:#253A35!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item):not(.is-disabled):hover,body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item):not(.is-disabled):focus,body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) .el-select-dropdown__item.hover:not(.is-disabled){background:#E5FAF2!important;box-shadow:inset 3px 0 0 #24E4BB!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) .el-select-dropdown__item.selected{background:#E5FAF2!important;color:#057A5E!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item).is-disabled{background:transparent!important;color:#A8AFB7!important;}
+body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) .el-scrollbar__thumb{background:#C7D8D1!important;border-radius:20px!important;}
+`;
+  var st=document.createElement('style');st.id='fx-flow-ui';st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
 
   var P={
@@ -114,12 +153,12 @@
   };
   var title=function(n){               /* move the name into the card as its first row (with the icon tile) */
     if(n.__moved)return;n.__moved=1;
-    var A=kids(n).filter(isP)[0];if(!A){console.log('fx: no inner panel in node type',JSON.stringify(n.category||''));return}
+    var A=kids(n).filter(isP)[0];if(!A){log('fx: no inner panel in node type',JSON.stringify(n.category||''));return}
     var ab=kids(A).filter(isP),hd=ab[0],cd=ab[1];
-    if(!hd||!cd){console.log('fx: header/card not found in node type',JSON.stringify(n.category||''));return}
-    var content=kids(cd).filter(isP)[0];if(!content){console.log('fx: no content panel in node type',JSON.stringify(n.category||''));return}
+    if(!hd||!cd){log('fx: header/card not found in node type',JSON.stringify(n.category||''));return}
+    var content=kids(cd).filter(isP)[0];if(!content){log('fx: no content panel in node type',JSON.stringify(n.category||''));return}
     var txt=null;var f=function(o){if(!txt&&o instanceof go.TextBlock)txt=o;if(o instanceof go.Panel)o.elements.each(f)};f(hd);
-    if(!txt||!txt.panel||!txt.panel.panel){console.log('fx: name panel not found in node type',JSON.stringify(n.category||''));return}
+    if(!txt||!txt.panel||!txt.panel.panel){log('fx: name panel not found in node type',JSON.stringify(n.category||''));return}
     var tp=txt.panel;tp.panel.remove(tp);content.insertAt(0,tp);
     tp.alignment=go.Spot.Left;tp.margin=new go.Margin(10,12,6,12);
     txt.textAlign='left';txt.margin=new go.Margin(0);
@@ -242,7 +281,7 @@
   };
   requestAnimationFrame(loop);
 
-  setTimeout(function(){var d=get();if(!d)return;var vis=0;d.links.each(function(l){if(l.actualBounds.width>2||l.actualBounds.height>2)vis++});
+  setTimeout(function(){if(!DEBUG)return;var d=get();if(!d)return;var vis=0;d.links.each(function(l){if(l.actualBounds.width>2||l.actualBounds.height>2)vis++});
     var cats={};d.nodes.each(function(n){var k=n.category||'(default)';cats[k]=(cats[k]||0)+1});
-    console.log('fx diag: nodes',d.nodes.count,'| links',d.links.count,'| links with size',vis,'| types',JSON.stringify(cats))},3000);
+    log('fx diag: nodes',d.nodes.count,'| links',d.links.count,'| links with size',vis,'| types',JSON.stringify(cats))},3000);
 }();
