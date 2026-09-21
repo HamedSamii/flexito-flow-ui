@@ -1,5 +1,5 @@
-// Flexito flow builder v7.4: existing nodes/links + approved compact step menu, dropdowns, dialogs and node-panel boxes
-// Full replacement file. Do not load alongside an earlier fx-flow.js.
+// Flexito flow builder v7.5: v7.4 (canvas, step menu, dropdowns, dialogs, node panel) + Sub Flows page module
+// Full replacement file. Do not load alongside an earlier fx-flow.js. The Sub Flows module (bottom of file) is inert on every other page.
 // Menu previews verified by user; combined bundle requires platform smoke test.
 !function(){
   if(window.__fxSoft6){console.warn('fx: an fx-flow script is already running on this page (older version still in the HTML Script field?). Remove that line, save, reload, then run this one.');return}window.__fxSoft6=1;
@@ -327,4 +327,177 @@ body:has(.main-flow-builder) .el-dialog .el-dialog__footer{padding:16px 28px 22p
   setTimeout(function(){if(!DEBUG)return;var d=get();if(!d)return;var vis=0;d.links.each(function(l){if(l.actualBounds.width>2||l.actualBounds.height>2)vis++});
     var cats={};d.nodes.each(function(n){var k=n.category||'(default)';cats[k]=(cats[k]||0)+1});
     log('fx diag: nodes',d.nodes.count,'| links',d.links.count,'| links with size',vis,'| types',JSON.stringify(cats))},3000);
+}();
+
+/* ====================================================================================
+   v7.5 module: Sub Flows page (folders rail, one-row flows, icons, labels strip, AI button)
+   Self-contained: does nothing on pages that are not the Sub Flows list.
+   ==================================================================================== */
+!function(){
+  if(window.__fxFlowsPage)return;window.__fxFlowsPage=1;
+  var NAME='Build with AI';   /* label of the AI button (top of the folders rail) */
+  var DEBUG=false;            /* true = print what the module found (troubleshooting) */
+  var svg=function(p,a){return 'url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' '+a+'>'+p+'</svg>')+'")'};
+  var G="fill='none' stroke='#057A5E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'";
+  var K="fill='none' stroke='#000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'";
+  var FD="<path d='M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/>";
+  var chat=svg("<path d='M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 21 12z'/>",G);
+  var branch=svg("<circle cx='6' cy='5' r='2'/><circle cx='6' cy='19' r='2'/><circle cx='18' cy='8' r='2'/><path d='M6 7v10M18 10c0 4-4 5-10 8'/>",G);
+  var braces=svg("<path d='M9 4C6 4 6 6 6 8v2c0 1.5-1 2-2 2 1 0 2 .5 2 2v2c0 2 0 4 3 4M15 4c3 0 3 2 3 4v2c0 1.5 1 2 2 2-1 0-2 .5-2 2v2c0 2 0 4-3 4'/>",G);
+  var folder=svg(FD,G);
+  var foldPlus=svg(FD+"<path d='M12 11v5M9.5 13.5h5'/>",K);
+  var spark=svg("<path d='M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z'/><path d='M19 3l.8 2.2L22 6l-2.2.8L19 9l-.8-2.2L16 6l2.2-.8z'/>","fill='#000'");
+
+  var css=`
+.fx-page{--m:#24E4BB;--d:#0A0E1A;--ln:#E6EAF2;--soft:#E7FBF6;--g:#057A5E;--lb:#7F848D;--nav:#1B2137;--omni:#A684FF;position:relative;display:grid!important;grid-template-columns:248px minmax(0,1fr);grid-auto-rows:min-content;margin:12px;padding:0!important;border:1px solid var(--ln);border-radius:22px;overflow:hidden;background:#F5FAFE!important;min-height:calc(100vh - 260px)}
+.fx-page>*{grid-column:2;min-width:0}
+.fx-page .el-button,.fx-page .el-input__inner,.fx-page .el-select{font-family:inherit!important}
+/* rail: folders */
+.fx-page>.fx-folders{position:relative!important;grid-column:1;grid-row:1/span 6;align-self:stretch;margin:0!important;padding:84px 12px 22px!important;border:0!important;border-right:1px solid var(--ln)!important;border-radius:0!important;background:#fff!important}
+.fx-folders::before{content:'FOLDERS';display:block;padding:0 10px 6px;font-size:10px;font-weight:700;letter-spacing:.16em;line-height:30px;color:var(--lb)}
+.fx-folders>div,.fx-folders>div>div,.fx-folders .el-row,.fx-folders .el-col{position:static!important}
+.fx-folders .el-row{display:flex!important;flex-direction:column;gap:2px;margin:0!important}
+.fx-folders .el-row::before,.fx-folders .el-row::after{display:none!important}
+.fx-folders .el-col{width:100%!important;max-width:100%!important;padding:0!important;float:none!important}
+.fx-folders .flow-card{height:46px!important;margin:0!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;transform:none!important}
+.fx-folders .flow-card-title{background:transparent!important;border:0!important;height:100%;color:var(--d)!important;font-size:15px!important;font-weight:500}
+.fx-folders .flow-card-title .font-weight-bold{font-size:15px!important;font-weight:500!important}
+.fx-folders .flow-card:hover{background:var(--soft)!important}
+.fx-folders .flow-card:hover .flow-card-title{color:var(--g)!important}
+.fx-folders .pro-badge .badge{background:var(--soft)!important;color:var(--g)!important;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px}
+.fx-folders .flow-card-title .el-button{border:0!important;background:transparent!important;box-shadow:none!important;opacity:0;transition:opacity .15s;padding:6px!important}
+.fx-folders .flow-card:hover .el-button{opacity:1}
+/* create folder: icon only, label on hover */
+.fx-page .fx-folders .el-button.addbtn{position:absolute!important;top:83px;right:14px;z-index:5;width:32px;height:32px;margin:0!important;padding:0 8px!important;display:flex!important;align-items:center;justify-content:flex-start;overflow:hidden;white-space:nowrap;border:0!important;border-radius:10px!important;background:var(--m)!important;color:#04241D!important;font-size:12px!important;font-weight:700;transition:width .22s ease}
+.fx-folders .addbtn i{display:none!important}
+.fx-folders .addbtn::before{content:'';flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:${foldPlus} center/contain no-repeat;mask:${foldPlus} center/contain no-repeat}
+.fx-folders .addbtn>span{font-size:0;opacity:0;margin-left:0;transition:opacity .15s .05s,margin .2s}
+.fx-page .fx-folders .el-button.addbtn:hover{width:142px}
+.fx-folders .addbtn:hover>span{font-size:12px;opacity:1;margin-left:8px}
+/* header */
+.fx-head,.fx-head .text-right{position:static!important}
+.fx-head{padding:26px 28px 10px!important;margin:0!important}
+.fx-head .mr-auto{font-size:26px!important;line-height:1.15;font-weight:800;letter-spacing:-.02em;color:var(--d)!important}
+.fx-head .mr-auto::after{content:'';display:block;width:36px;height:4px;border-radius:4px;background:var(--m);margin-top:8px}
+.fx-head .el-button{height:40px;border-radius:999px!important;padding:0 18px!important;font-size:13px!important;font-weight:600!important;box-shadow:none!important}
+/* AI button: top of the rail, same navy as the side menu */
+.fx-page .fx-head .el-button.fx-ai{position:absolute!important;top:22px;left:14px;width:220px;height:46px!important;z-index:8;display:flex!important;align-items:center;justify-content:center;gap:8px;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--nav)!important;color:#fff!important;font-size:0!important;box-shadow:0 10px 24px -14px rgba(27,33,55,.7)!important;transition:background .15s,color .15s,transform .15s}
+.fx-head .el-button.fx-ai>*{display:none!important}
+.fx-head .el-button.fx-ai::before{content:'';flex:none;width:16px;height:16px;background:var(--m);-webkit-mask:${spark} center/contain no-repeat;mask:${spark} center/contain no-repeat}
+.fx-head .el-button.fx-ai::after{content:'${NAME}';font-size:14px;font-weight:600;line-height:1}
+.fx-page .fx-head .el-button.fx-ai:hover{background:var(--m)!important;color:#04241D!important;transform:translateY(-1px)}
+.fx-head .el-button.fx-ai:hover::before{background:#04241D}
+/* toolbar */
+.fx-tools{display:flex!important;align-items:center;gap:10px;padding:8px 28px 18px!important;margin:0!important}
+.fx-tools .el-input__inner{height:40px;border-radius:999px!important;border:1px solid var(--ln)!important;background:#fff!important;padding-left:16px;color:var(--d)!important}
+.fx-tools .el-input__inner:focus{border-color:var(--m)!important;box-shadow:0 0 0 3px rgba(36,228,187,.22)!important}
+.fx-tools .el-button{border-radius:999px!important;border:1px solid var(--ln)!important;background:#fff!important;color:var(--d)!important}
+/* flow rows: no images, one per row */
+.fx-list{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;align-content:start;padding:0 28px 28px!important;margin:0!important}
+.fx-list::before,.fx-list::after{display:none!important}
+.fx-list>.el-col{width:auto!important;max-width:none!important;padding:0!important;float:none!important}
+.fx-list .flow-card{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important;height:auto!important;min-height:68px!important;align-content:center;margin:0!important;padding:12px 0!important;background:#fff!important;border:1px solid var(--ln)!important;border-radius:16px!important;overflow:hidden;box-shadow:none!important;transition:transform .18s,box-shadow .18s,border-color .18s}
+.fx-list .flow-card:hover{transform:translateY(-2px);border-color:var(--m)!important;box-shadow:0 14px 30px -18px rgba(10,14,26,.3)!important}
+.fx-list .flow-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--m);opacity:0;transition:opacity .18s;z-index:7}
+.fx-list .flow-card:hover::before{opacity:1}
+.fx-list .flow-card>:not(.flow-card-title):not(.absolute){display:none!important}
+.fx-list .flow-card-title{grid-column:1!important;grid-row:1!important;align-self:center!important;height:auto!important;padding:0 14px 0 20px!important;background:transparent!important;border:0!important;color:var(--d)!important;line-height:1.35}
+.fx-list .flow-card-title .font-weight-bold{font-size:15px!important;font-weight:600!important}
+.fx-list .flow-card>.absolute{position:static!important;grid-column:1!important;grid-row:2!important;align-self:start;width:auto!important;background:transparent!important;color:var(--lb)!important;font-size:12px!important;font-weight:500;text-align:left!important;padding:2px 20px 0!important}
+.fx-list .flow-card>.absolute .px-3{padding:0!important;width:auto!important;font-size:12px!important}
+.fx-list .flow-card>.absolute .px-3::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--m);margin-right:7px}
+.fx-list .flow-card-title .el-button{border:1px solid var(--ln)!important;border-radius:10px!important;background:#fff!important;color:var(--d)!important;box-shadow:none!important}
+.fx-list .flow-card-title .el-button:hover{background:var(--soft)!important;border-color:var(--m)!important;color:var(--g)!important}
+.fx-page .el-switch__core{background:#D7DEEA!important;border-color:transparent!important}
+.fx-page .el-switch.is-checked .el-switch__core{background:var(--m)!important;border-color:var(--m)!important}
+/* labels: slim horizontal strip on top */
+.fx-wrap{flex-direction:column!important}
+.fx-wrap>.fx-main{width:100%!important;flex:1 1 auto!important;min-width:0!important}
+.fx-labels{display:flex!important;flex-direction:row!important;flex-wrap:wrap;align-items:center;gap:8px 14px;flex:none!important;width:auto!important;max-width:none!important;min-width:0!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:12px 12px 0!important;padding:8px 16px!important;background:#fff!important;border:1px solid #E6EAF2!important;border-radius:16px}
+.fx-flat{display:contents!important}
+.fx-atom{width:auto!important;max-width:none!important;min-width:0;margin:0!important;flex:none!important}
+.fx-atom.fx-row{position:relative;display:flex!important;align-items:center;gap:6px;padding:0!important}
+.fx-labels .fx-edit{position:absolute!important;top:-14px;right:-12px;width:26px!important;height:26px!important;min-width:0!important;padding:0!important;z-index:5;border-radius:8px!important}
+.fx-lb-title,.fx-lb-txt{font-size:16px!important;font-weight:700!important;color:#0A0E1A!important;letter-spacing:0!important;text-transform:none!important;white-space:nowrap}
+.fx-lb-txt>*{font-size:14px;font-weight:400}
+.fx-labels .fx-add{order:99;margin-left:auto!important;flex:none!important;width:28px!important;height:28px!important;min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:8px!important;background:var(--omni,#A684FF)!important;color:#fff!important;display:inline-flex!important;align-items:center;justify-content:center;position:static!important;opacity:1!important;visibility:visible!important;box-shadow:none!important}
+.fx-labels .fx-add:hover{background:#946FF5!important}
+.fx-labels .fx-add,.fx-labels .fx-add *{color:#fff!important;font-size:14px!important}
+/* flow / folder icons */
+html body .fx-page .flow-card i.svg-icon.svg-icon.svg-icon{position:relative!important;display:inline-block!important;width:32px!important;height:32px!important;min-width:32px;border-radius:10px!important;background:#E7FBF6!important;-webkit-mask:none!important;mask:none!important;content:normal!important;filter:none!important;font-size:0!important;line-height:0!important;vertical-align:middle;overflow:hidden}
+html body .fx-page .flow-card i.svg-icon.svg-icon.svg-icon::after{display:none!important}
+html body .fx-page .flow-card i.svg-icon.svg-icon.svg-icon::before{content:''!important;position:absolute!important;inset:0!important;display:block!important;width:auto!important;height:auto!important;-webkit-mask:none!important;mask:none!important;background:var(--fxi) center/18px no-repeat!important}
+html body .fx-page .flow-card i.svg-web-flow{--fxi:${chat}}
+html body .fx-page .flow-card i.svg-workflow-flow{--fxi:${branch}}
+html body .fx-page .flow-card i.svg-function-flow{--fxi:${braces}}
+html body .fx-page .flow-card i.el-icon-folder.el-icon-folder{display:inline-block!important;width:20px!important;height:20px!important;font-size:0!important;background:${folder} center/18px no-repeat!important}
+html body .fx-page .flow-card i.el-icon-folder.el-icon-folder::before{content:none!important}
+`;
+
+  var HAS='input[type=checkbox],.el-checkbox',BTN='button,.el-button,[role=button]',PLUS='[class*=plus]',EDIT='[class*=edit],[class*=pencil]';
+  var logged=false;
+  /* the platform gives these containers no stable classes, so we tag them */
+  var tag=function(){
+    var t=document.querySelector('.mb-4 > .mr-auto');
+    if(!t||!document.querySelector('.flow-card'))return;
+    var H=t.parentElement,P=H.parentElement;
+    var up=function(e){while(e&&e.parentElement!==P)e=e.parentElement;return e||null};
+    var F=up([].slice.call(P.querySelectorAll('.mt-2.py-2.px-3.border.rounded')).filter(function(e){return e.querySelector('.folder-card')})[0]);
+    var S=up(P.querySelector('.el-select'));
+    var c=P.querySelector('.flow-card:not(.folder-card)');
+    var L=c&&c.closest('.el-row');
+    P.classList.add('fx-page');H.classList.add('fx-head');
+    if(F)F.classList.add('fx-folders');
+    if(S)S.classList.add('fx-tools');
+    if(L)L.classList.add('fx-list');
+    var hb=[].slice.call(H.querySelectorAll('.el-button'));
+    var ai=hb.filter(function(b){return /generate/i.test(b.textContent)})[0]||hb.filter(function(b){return !b.classList.contains('el-button--primary')})[0];
+    if(ai)ai.classList.add('fx-ai');
+    /* labels strip */
+    var R=P.closest('.flex-1');if(!R)return;
+    var W=R.parentElement;W.classList.add('fx-wrap');R.classList.add('fx-main');
+    var Lb=[].slice.call(W.children).filter(function(x){return x!==R&&x.querySelector(HAS)})[0];
+    if(!Lb)return;
+    Lb.classList.add('fx-labels');
+    var cur=Lb.querySelector(HAS),rows=[];
+    while(cur&&cur.parentElement){
+      var p=cur.parentElement;
+      var kids=[].slice.call(p.children).filter(function(ch){return ch.matches(HAS)||ch.querySelector(HAS)});
+      if(kids.length>=2){rows=kids;break}
+      if(p===Lb)break;
+      cur=p;
+    }
+    var btns=[].slice.call(Lb.querySelectorAll(BTN));
+    var isEdit=function(b){return b.matches(EDIT)||!!b.querySelector(EDIT)};
+    var inRows=function(b){return rows.some(function(r){return r.contains(b)})};
+    var add=btns.filter(function(b){return !isEdit(b)&&(b.matches(PLUS)||!!b.querySelector(PLUS)||b.textContent.trim()==='+')})[0]
+      ||btns.filter(function(b){return !isEdit(b)&&!/\p{L}/u.test(b.textContent)&&!inRows(b)})[0];
+    btns.forEach(function(b){if(b!==add&&isEdit(b))b.classList.add('fx-edit')});
+    var all=[].slice.call(Lb.querySelectorAll('*'));
+    var title=all.filter(function(e){return !e.children.length&&/^\s*labels\s*$/i.test(e.textContent)})[0];
+    var dd=all.filter(function(e){var x=e.textContent.trim();return /selected/i.test(x)&&x.length<40&&!e.querySelector(HAS)&&!(add&&e.contains(add))})[0];
+    var tw=null;
+    if(!title){var w=document.createTreeWalker(Lb,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(/^\s*labels\s*$/i.test(n.nodeValue)){tw=n.parentElement;break}}}
+    var atoms=rows.slice();
+    if(add)atoms.push(add);
+    if(dd)atoms.push(dd);
+    if(title)atoms.push(title);
+    var flat=function(el){var q=el&&el.parentElement;while(q&&q!==Lb){if(atoms.indexOf(q)<0)q.classList.add('fx-flat');q=q.parentElement}};
+    atoms.forEach(function(a){a.classList.add('fx-atom');flat(a)});
+    rows.forEach(function(r){r.classList.add('fx-row')});
+    if(add)add.classList.add('fx-add');
+    if(title)title.classList.add('fx-lb-title');
+    else if(tw&&tw!==Lb){tw.classList.add('fx-lb-txt','fx-flat');flat(tw)}
+    if(DEBUG&&!logged){logged=true;console.log('fx flows',{folders:!!F,list:!!L,tools:!!S,ai:!!ai,labels:!!Lb,labelRows:rows.length,add:add?add.outerHTML.slice(0,120):null,dropdown:!!dd})}
+  };
+
+  var start=function(){
+    var st=document.createElement('style');st.id='fx-flows-ui';st.textContent=css;
+    (document.head||document.documentElement).appendChild(st);
+    var q=0;
+    var run=function(){cancelAnimationFrame(q);q=requestAnimationFrame(function(){try{tag()}catch(e){if(DEBUG)console.warn('fx flows tag failed',e)}})};
+    new MutationObserver(run).observe(document.body,{childList:true,subtree:true});
+    run();
+  };
+  if(document.body)start();else document.addEventListener('DOMContentLoaded',start);
 }();
