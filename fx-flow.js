@@ -1,4 +1,4 @@
-// Flexito flow builder v6.4: compact cards, icon tile + title, dotted links with a travelling dot
+// Flexito flow builder v6.5: compact cards, icon tile + title, dotted links with a travelling dot
 !function(){
   if(window.__fxSoft6)return;window.__fxSoft6=1;
   var TEXT='#1E293B',RADIUS=10,STRIPE=3.5,LINK_W=3.6,DOT=14;   /* LINK_W = line thickness (2.4 thin, 3.6 medium, 4.5 bold) | DOT = travelling dot size */
@@ -61,13 +61,22 @@
     };
     f(n);n.__circ=ci;return(n.__acc=a||'#6366f1');
   };
+  var isWhiteRR=function(o){return o instanceof go.Shape&&o.figure==='RoundedRectangle'&&(String(o.fill).toLowerCase()==='#ffffff'||o.__k)};
   var findCard=function(n){
-    if(n.__cs!==undefined)return n.__cs;
+    if(n.__csDone)return n.__cs;
     var A=kids(n).filter(isP)[0],cd=A&&kids(A).filter(isP)[1],s=cd&&kids(cd).filter(function(e){return e instanceof go.Shape})[0];
-    return(n.__cs=s||null);
+    if(!isWhiteRR(s)){                 /* not the card: look for the white rounded rectangle anywhere in the node */
+      s=null;
+      var f=function(o){if(s)return;if(o instanceof go.Shape&&o.name!=='SHAPE'&&isWhiteRR(o)){s=o;return}if(o instanceof go.Panel)o.elements.each(f)};f(n);
+    }
+    n.__try=(n.__try||0)+1;
+    if(s||n.__try>5){n.__cs=s||null;n.__csDone=1}
+    return s;
   };
   var card=function(cs,c){
-    var H=cs.actualBounds.height;if(!(H>=40))H=40;
+    var W=cs.actualBounds.width,H=cs.actualBounds.height;
+    if(!(isFinite(W)&&isFinite(H)&&W>=30&&H>=24)){cs.parameter1=RADIUS;return}   /* not measured yet: never build a gradient on it */
+    if(window.__fxNoBrush){cs.fill='#ffffff';cs.stroke=c;cs.strokeWidth=1.5;cs.parameter1=RADIUS;cs.shadowVisible=true;return}
     var key=Math.round(H)+'|'+c;
     if(cs.__k!==key){
       var s=Math.min(.12,STRIPE/H);
@@ -77,6 +86,14 @@
     }
     cs.parameter1=RADIUS;cs.stroke='rgba(15,23,42,.06)';cs.strokeWidth=1;cs.shadowVisible=true;
   };
+
+  /* safety net: if the canvas ever throws a gradient error, switch every card to a solid fill and stop using gradients */
+  window.addEventListener('error',function(e){
+    if(!e||!/createLinearGradient|non-finite/i.test(String(e.message)))return;
+    if(window.__fxNoBrush)return;window.__fxNoBrush=1;
+    console.warn('fx: gradient paint error -> falling back to solid cards');
+    var d=get();if(d)d.nodes.each(function(n){var cs=n.__cs;if(cs&&cs.__k){cs.fill='#ffffff';cs.__k=null}});
+  });
 
   var ports=function(n,c){             /* input port = the top circle: hide the big icon, keep a small visible ring */
     if(n.__hp)return;var ci=n.__circ;if(!ci||!ci.panel)return;n.__hp=1;
@@ -97,12 +114,12 @@
   };
   var title=function(n){               /* move the name into the card as its first row (with the icon tile) */
     if(n.__moved)return;n.__moved=1;
-    var A=kids(n).filter(isP)[0];if(!A){console.log('fx: no inner panel in',n.category);return}
+    var A=kids(n).filter(isP)[0];if(!A){console.log('fx: no inner panel in node type',JSON.stringify(n.category||''));return}
     var ab=kids(A).filter(isP),hd=ab[0],cd=ab[1];
-    if(!hd||!cd){console.log('fx: header/card not found in',n.category);return}
-    var content=kids(cd).filter(isP)[0];if(!content){console.log('fx: no content panel in',n.category);return}
+    if(!hd||!cd){console.log('fx: header/card not found in node type',JSON.stringify(n.category||''));return}
+    var content=kids(cd).filter(isP)[0];if(!content){console.log('fx: no content panel in node type',JSON.stringify(n.category||''));return}
     var txt=null;var f=function(o){if(!txt&&o instanceof go.TextBlock)txt=o;if(o instanceof go.Panel)o.elements.each(f)};f(hd);
-    if(!txt||!txt.panel||!txt.panel.panel){console.log('fx: name panel not found in',n.category);return}
+    if(!txt||!txt.panel||!txt.panel.panel){console.log('fx: name panel not found in node type',JSON.stringify(n.category||''));return}
     var tp=txt.panel;tp.panel.remove(tp);content.insertAt(0,tp);
     tp.alignment=go.Spot.Left;tp.margin=new go.Margin(10,12,6,12);
     txt.textAlign='left';txt.margin=new go.Margin(0);
@@ -226,5 +243,6 @@
   requestAnimationFrame(loop);
 
   setTimeout(function(){var d=get();if(!d)return;var vis=0;d.links.each(function(l){if(l.actualBounds.width>2||l.actualBounds.height>2)vis++});
-    console.log('fx diag: nodes',d.nodes.count,'| links',d.links.count,'| links with size',vis)},3000);
+    var cats={};d.nodes.each(function(n){var k=n.category||'(default)';cats[k]=(cats[k]||0)+1});
+    console.log('fx diag: nodes',d.nodes.count,'| links',d.links.count,'| links with size',vis,'| types',JSON.stringify(cats))},3000);
 }();
