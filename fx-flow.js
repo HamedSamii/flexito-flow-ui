@@ -1,4 +1,4 @@
-// Flexito flow builder v7.2: existing nodes/links + approved compact step menu and dropdowns
+// Flexito flow builder v7.3: existing nodes/links + approved compact step menu, dropdowns and dialogs
 // Full replacement file. Do not load alongside an earlier fx-flow.js.
 // Menu previews verified by user; combined bundle requires platform smoke test.
 !function(){
@@ -15,7 +15,7 @@
   var PERIOD=3600;           /* ms for one full cycle */
 
   var css=`
-/* Canvas controls retained; experimental node-panel/dialog styles excluded. */
+/* Canvas controls retained; experimental node-panel styles excluded. Dialog styles added in v7.3. */
 body:has(.main-flow-builder){--fx-mint:#24E4BB;--fx-mint-hover:#1DD3AB;--fx-mint-ink:#04241D;--fx-mint-soft:#E7FBF6;--fx-ink:#0A0E1A;--fx-label:#7F848D;--fx-line:#E6EAF2;--fx-divider:#F1F4F9;--fx-chip:#EEF2F9;--fx-off:#D7DEEA;--fx-green:#057A5E;--fx-font:'Inter','IBM Plex Sans Arabic','Segoe UI',system-ui,sans-serif}
 
 /* ---- canvas + top controls (Flexito product look: pale canvas, dotted grid, mint primary) ---- */
@@ -64,6 +64,24 @@ body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-
 body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) .el-select-dropdown__item.selected{background:#E5FAF2!important;color:#057A5E!important;}
 body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) :is(.el-dropdown-menu__item,.el-select-dropdown__item).is-disabled{background:transparent!important;color:#A8AFB7!important;}
 body:has(.main-flow-builder) :is(.el-dropdown-menu,.el-select-dropdown) .el-scrollbar__thumb{background:#C7D8D1!important;border-radius:20px!important;}
+
+/* ---- Dialogs (previewed locally, now permanent): rounded card, mint accent bar, soft inputs, mint primary button ---- */
+body:has(.main-flow-builder) .el-dialog:not(.is-fullscreen){border-radius:20px!important;box-shadow:0 24px 70px -20px rgba(10,30,40,.3)!important;background:#fff!important}
+body:has(.main-flow-builder) .el-dialog .el-dialog__header{padding:24px 28px 18px!important;background:#fff!important;border-bottom:1px solid #EDF1F5!important;border-radius:20px 20px 0 0!important}
+body:has(.main-flow-builder) .el-dialog .el-dialog__header::before{content:"";display:block;width:36px;height:4px;margin-bottom:12px;border-radius:4px;background:#24E4BB}
+body:has(.main-flow-builder) .el-dialog .el-dialog__title{color:#0A0E1A!important;font-size:18px!important;font-weight:700!important}
+body:has(.main-flow-builder) .el-dialog .el-dialog__headerbtn{width:32px;height:32px;top:20px!important;right:20px!important;border-radius:50%;background:#F0F3F7!important}
+body:has(.main-flow-builder) .el-dialog .el-dialog__body{padding:24px 28px!important}
+body:has(.main-flow-builder) .el-dialog .el-input__inner{height:44px!important;border:1px solid #E0E7EF!important;border-radius:11px!important;background:#fff!important;color:#243244!important;box-shadow:none!important}
+body:has(.main-flow-builder) .el-dialog .el-textarea__inner{border:1px solid #E0E7EF!important;border-radius:11px!important;background:#fff!important;color:#243244!important}
+body:has(.main-flow-builder) .el-dialog .el-input__inner:focus,
+body:has(.main-flow-builder) .el-dialog .el-textarea__inner:focus{border-color:#24E4BB!important;box-shadow:0 0 0 3px rgba(36,228,187,.14)!important}
+body:has(.main-flow-builder) .el-dialog input::placeholder,
+body:has(.main-flow-builder) .el-dialog textarea::placeholder{font-style:normal!important;color:#98A2AF!important}
+body:has(.main-flow-builder) .el-dialog .el-button{border-radius:10px!important}
+body:has(.main-flow-builder) .el-dialog .el-button--primary{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}
+body:has(.main-flow-builder) .el-dialog .el-button--primary:not(.is-disabled):hover{background:#1DD3AB!important;border-color:#1DD3AB!important}
+body:has(.main-flow-builder) .el-dialog .el-dialog__footer{padding:16px 28px 22px!important;border-top:1px solid #EDF1F5}
 `;
   var st=document.createElement('style');st.id='fx-flow-ui';st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
