@@ -1,4 +1,4 @@
-// Flexito flow builder v7.3: existing nodes/links + approved compact step menu, dropdowns and dialogs
+// Flexito flow builder v7.4: existing nodes/links + approved compact step menu, dropdowns, dialogs and node-panel boxes
 // Full replacement file. Do not load alongside an earlier fx-flow.js.
 // Menu previews verified by user; combined bundle requires platform smoke test.
 !function(){
@@ -15,7 +15,7 @@
   var PERIOD=3600;           /* ms for one full cycle */
 
   var css=`
-/* Canvas controls retained; experimental node-panel styles excluded. Dialog styles added in v7.3. */
+/* Canvas controls retained. Dialog styles added in v7.3; node-panel tiles/text boxes added in v7.4. */
 body:has(.main-flow-builder){--fx-mint:#24E4BB;--fx-mint-hover:#1DD3AB;--fx-mint-ink:#04241D;--fx-mint-soft:#E7FBF6;--fx-ink:#0A0E1A;--fx-label:#7F848D;--fx-line:#E6EAF2;--fx-divider:#F1F4F9;--fx-chip:#EEF2F9;--fx-off:#D7DEEA;--fx-green:#057A5E;--fx-font:'Inter','IBM Plex Sans Arabic','Segoe UI',system-ui,sans-serif}
 
 /* ---- canvas + top controls (Flexito product look: pale canvas, dotted grid, mint primary) ---- */
@@ -82,6 +82,31 @@ body:has(.main-flow-builder) .el-dialog .el-button{border-radius:10px!important}
 body:has(.main-flow-builder) .el-dialog .el-button--primary{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}
 body:has(.main-flow-builder) .el-dialog .el-button--primary:not(.is-disabled):hover{background:#1DD3AB!important;border-color:#1DD3AB!important}
 body:has(.main-flow-builder) .el-dialog .el-dialog__footer{padding:16px 28px 22px!important;border-top:1px solid #EDF1F5}
+/* ---- Node panel (v7.4): rounded mint option tiles, PRO badge, Next-step card, filled rounded text boxes ---- */
+.node-viewer .addbtn{border:0!important;border-radius:24px!important;background:#EAFBF6!important;color:#04241D!important;font-weight:700!important;box-shadow:none!important;transition:background .15s,transform .15s}
+.node-viewer .addbtn:hover,.node-viewer .addbtn:focus{background:#24E4BB!important;color:#04241D!important;transform:translateY(-1px)}
+.node-viewer .addbtn svg,.node-viewer .addbtn i{color:#057A5E!important}
+.node-viewer .addbtn:hover svg,.node-viewer .addbtn:hover i{color:#04241D!important}
+.node-viewer .addbtn::after{border-radius:999px!important;font-size:8px!important}
+.node-viewer .el-card.is-none-shadow{border:1px solid #E6EAF2!important;border-radius:24px!important;background:#fff!important;box-shadow:none!important}
+.node-viewer .el-card.is-none-shadow .d-flex.align-items-center[class*="next-"]{border-radius:16px!important;overflow:hidden!important}
+
+/* text boxes: filled soft surface, no grey border, 16px radius, mint focus ring (header title + note box excluded below) */
+.node-viewer .card-body .el-input__inner,.node-viewer .card-body .el-textarea__inner{background:#F3F6F9!important;border:1.5px solid transparent!important;border-radius:16px!important;color:#0A0E1A!important;box-shadow:none!important;transition:background .15s,border-color .15s,box-shadow .15s}
+.node-viewer .card-body .el-input__inner{height:46px!important;padding:0 16px!important}
+.node-viewer .card-body .el-textarea__inner{padding:12px 16px!important}
+.node-viewer .card-body .el-input__inner:hover,.node-viewer .card-body .el-textarea__inner:hover{background:#EDF2F6!important}
+.node-viewer .card-body .el-input__inner:focus,.node-viewer .card-body .el-textarea__inner:focus{background:#fff!important;border-color:#24E4BB!important;box-shadow:0 0 0 4px rgba(36,228,187,.16)!important}
+.node-viewer .card-body input::placeholder,.node-viewer .card-body textarea::placeholder{font-style:normal!important;color:#98A2AF!important}
+.node-viewer .card-body .el-input.is-disabled .el-input__inner{background:#EDF1F5!important;color:#98A2AF!important}
+.node-viewer .card-body .el-select .el-input .el-select__caret{color:#98A2AF!important}
+/* the </> tab attached to a text box */
+.node-viewer .card-body .el-input-group__prepend{background:#E6EBF1!important;border:0!important;border-radius:16px 0 0 16px!important;color:#667085!important;padding:0 14px!important}
+.node-viewer .card-body .el-input-group--prepend .el-input__inner{border-radius:0 16px 16px 0!important}
+/* note box stays a soft yellow pill-box */
+.node-viewer .alert.alert-warning{border:0!important;border-radius:16px!important}
+.node-viewer .card-body .alert .el-textarea__inner{background:transparent!important;border:0!important;box-shadow:none!important;color:#8a6d3b!important;padding:6px 10px!important}
+
 `;
   var st=document.createElement('style');st.id='fx-flow-ui';st.textContent=css;
   (document.head||document.documentElement).appendChild(st);
