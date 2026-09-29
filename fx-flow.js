@@ -1297,5 +1297,42 @@ img.fx-ib-av{width:44px!important;height:44px!important;border-radius:50%!import
   tag.id = 'fx-cards-final4';
   tag.textContent = css;
   document.head.appendChild(tag);
+  /* The AI Agent editor contains a nested .next-step-row, so the card rules above
+     would otherwise apply to its full-screen form and cap its fields at 70vh. */
+  var fullscreenScroll = document.createElement('style');
+  fullscreenScroll.id = 'fx-fullscreen-scroll';
+  fullscreenScroll.textContent = '.el-dialog.is-fullscreen{overflow-y:auto!important;overscroll-behavior-y:contain}';
+  document.head.appendChild(fullscreenScroll);
+  var syncAgentPage = function(){
+    var isAgent = /^#\/ai_hub\/ai_agent(?:[/?#]|$)/.test(location.hash);
+    document.documentElement.classList.toggle('fx-ai-agent-page', isAgent);
+    if(tag.sheet)tag.sheet.disabled = isAgent;
+  };
+  syncAgentPage();
+  window.addEventListener('hashchange', syncAgentPage);
   console.log('✅ v4 injected — targeting the correct flex parent');
+})();
+
+/* Bot directory: select the platform's own list view once when its toolbar appears. */
+(function(){
+  if(window.__fxBotListDefault)return;
+  window.__fxBotListDefault=true;
+  var timer=0,attempts=0;
+  var chooseList=function(){
+    var button=document.querySelector('#team-main button.el-button.mr-2.is-plain:has(i.fa-list)');
+    if(!button||!button.getClientRects().length)return false;
+    button.click();
+    return true;
+  };
+  var start=function(){
+    clearInterval(timer);
+    attempts=0;
+    if(chooseList())return;
+    timer=setInterval(function(){
+      if(chooseList()||++attempts>=30)clearInterval(timer);
+    },500);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+  window.addEventListener('hashchange',start);
 })();
