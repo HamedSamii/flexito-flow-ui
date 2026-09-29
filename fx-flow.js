@@ -1310,27 +1310,29 @@ img.fx-ib-av{width:44px!important;height:44px!important;border-radius:50%!import
   };
   syncAgentPage();
   window.addEventListener('hashchange', syncAgentPage);
-  console.log('✅ v4 injected — targeting the correct flex parent');
+  console.log('✅ v6 injected — targeting the correct flex parent');
 })();
 
-/* Bot directory: select the platform's own list view once when its toolbar appears. */
+/* Choose the platform list view when the bot-directory toolbar first appears. */
 (function(){
-  if(window.__fxBotListDefault)return;
-  window.__fxBotListDefault=true;
-  var timer=0,attempts=0;
-  var chooseList=function(){
+  if(window.__fxBotDirectoryList)return;
+  window.__fxBotDirectoryList=true;
+  var timer=0,tries=0,chosen=false;
+  var select=function(){
+    if(chosen)return true;
     var button=document.querySelector('#team-main button.el-button.mr-2.is-plain:has(i.fa-list)');
     if(!button||!button.getClientRects().length)return false;
     button.click();
+    button.style.setProperty('display','none','important');
+    chosen=true;
     return true;
   };
   var start=function(){
     clearInterval(timer);
-    attempts=0;
-    if(chooseList())return;
-    timer=setInterval(function(){
-      if(chooseList()||++attempts>=30)clearInterval(timer);
-    },500);
+    chosen=false;
+    tries=0;
+    if(select())return;
+    timer=setInterval(function(){if(select()||++tries>=30)clearInterval(timer)},500);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
