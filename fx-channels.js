@@ -33,8 +33,8 @@
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) tbody tr:hover .svg-icon{transform:translateY(-6px) scale(1.06)}
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(2){margin-top:6px;min-height:18px;font-size:12px;opacity:.55;word-break:break-word}
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(3){margin-top:16px}
-#team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(3)>div{text-align:center!important}
-#team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(3) .el-button{min-width:120px;padding:9px 22px}
+#team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(3)>div{display:flex!important;flex-direction:column!important;align-items:center!important;gap:8px!important;text-align:center!important}
+#team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) td:nth-child(3) .el-button{box-sizing:border-box!important;min-width:120px;max-width:100%!important;height:auto!important;margin:0!important;padding:9px 14px!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.35!important}
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) .pro-badge,
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card:nth-child(2) .el-button i{display:none!important}
 #team-main .p-3>div:not(.fx-channel-detail)>.content-card .el-button{border-radius:999px!important;font-weight:600}
