@@ -110,6 +110,13 @@
   tag.textContent=css;
   document.head.appendChild(tag);
   var markDetails=function(){
+    // The OmniAI channel launcher already has its title in the 360 header.
+    // Hide only the duplicate native heading; keep its description and controls.
+    document.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function(heading){
+      if((heading.textContent||'').trim()==='Connect a channel'){
+        heading.style.setProperty('display','none','important');
+      }
+    });
     document.querySelectorAll('#team-main .p-3 > div').forEach(function(page){
       var headers=[].map.call(page.querySelectorAll('table thead th'),function(th){
         return (th.textContent||'').trim().toLowerCase();
