@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v11.0 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v11.2 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -25,8 +25,15 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-if(W.fxOmni&&W.fxOmni.version){console.info('[fxOmni] already loaded (no second copy started):',W.fxOmni.on(),W.fxOmni.info());return}
-var VERSION='11.0';
+var VERSION='11.2';
+if(W.fxOmni&&W.fxOmni.version){
+  if(W.fxOmni.version===VERSION){console.info('[fxOmni] already loaded (no second copy started):',W.fxOmni.on(),W.fxOmni.info());return}
+  /* a different build is running: switch it off cleanly, then this copy takes over */
+  console.info('[fxOmni] replacing v'+W.fxOmni.version+' with v'+VERSION);
+  try{W.fxOmni.off()}catch(e){}
+  var oldStyle=D.getElementById('fx-omniai-unified');if(oldStyle)oldStyle.parentNode.removeChild(oldStyle);
+  try{delete W.fxOmni}catch(e){W.fxOmni=undefined}
+}
 var urlOff=function(){return /[?&#]fx=off\b/.test(location.href)};
 var log=function(){if(W.__fxOmniDebug)console.log.apply(console,['[fxOmni]'].concat([].slice.call(arguments)))};
 
@@ -1253,6 +1260,16 @@ var botListJob=function(){   /* the approved All Bots list view: same behaviour 
   S.bot=true;b.click();b.style.setProperty('display','none','important');
 };
 
+var TAGRX=/^(PRO|BETA|NEW)$/i;
+var proJob=function(){   /* hide every "PRO", "BETA" and "NEW" sign (badges, tags, pills) everywhere; the product's own plan limits are unchanged */
+  var c=D.querySelectorAll('.badge:not([data-fxo-pro]),.el-tag:not([data-fxo-pro]),sup:not([data-fxo-pro]),small:not([data-fxo-pro]),span:not([data-fxo-pro]),.pro-badge:not([data-fxo-pro])');
+  for(var i=0;i<c.length;i++){var e=c[i];
+    if(e.childElementCount===0){var t=(e.textContent||'').trim();   /* a sign sits beside other text; a lone "New" that is a button or tab label is kept */
+      if(TAGRX.test(t)&&!e.closest('button,.el-button')&&(e.parentElement&&(e.parentElement.classList.contains('pro-badge')||(e.parentElement.textContent||'').trim()!==t)))e.setAttribute('data-fxo-pro','')}
+    else if(e.classList.contains('pro-badge')&&/^(PRO|BETA|NEW)+$/i.test((e.textContent||'').replace(/\s+/g,'')))e.setAttribute('data-fxo-pro','');
+  }
+};
+
 var apply=function(){
   S.t=0;S.last=Date.now();
   if(!S.on)return;
@@ -1272,6 +1289,7 @@ var apply=function(){
   try{titleJob()}catch(e){log('title',e)}
   try{channelJob()}catch(e){log('channel',e)}
   try{botListJob()}catch(e){log('bots',e)}
+  try{proJob()}catch(e){log('pro',e)}
   try{if(!W.__fxFlowsPage)SUBFLOWS.run()}catch(e){log('subflows',e)}
   try{if(p==='insights')INSIGHTS.run()}catch(e){log('insights',e)}
   try{if(p==='inbox'&&Date.now()-S.ib>500){S.ib=Date.now();INBOX.run()}}catch(e){log('inbox',e)}
@@ -1286,7 +1304,7 @@ var schedule=function(){
 var onHash=function(){clearTimeout(S.t);S.t=0;cancelAnimationFrame(S.q);S.q=0;apply()};
 
 var buildCSS=function(){
-  return TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
+  return 'html.fxo [data-fxo-pro]{display:none!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
 };
 
 var on=function(){
@@ -1313,6 +1331,7 @@ var off=function(){
   try{INBOX.undo()}catch(e){}
   [].forEach.call(D.querySelectorAll('[data-fxo-hid]'),function(h){h.style.removeProperty('display');h.removeAttribute('data-fxo-hid')});
   [].forEach.call(D.querySelectorAll('[data-fxo-shown]'),function(h){h.removeAttribute('data-fxo-shown')});
+  [].forEach.call(D.querySelectorAll('[data-fxo-pro]'),function(h){h.removeAttribute('data-fxo-pro')});
   if(S.style&&S.style.parentNode)S.style.parentNode.removeChild(S.style);
   H.classList.remove('fxo','fxo-icons','fxo-ai-agent');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');
   [].forEach.call(D.querySelectorAll('[data-fxo-title]'),function(e){e.removeAttribute('data-fxo-title')});
