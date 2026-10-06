@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v11.2 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v11.6 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -25,7 +25,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='11.2';
+var VERSION='11.6';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){console.info('[fxOmni] already loaded (no second copy started):',W.fxOmni.on(),W.fxOmni.info());return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -288,10 +288,11 @@ var TEMPLATES=function(){
   /* hero / not-connected channel + OAuth integration pages: icon tile, display title, one CTA */
   C(HERO,hc)+'{text-align:center;padding:12px 0}',
   C(HERO,hc+' .el-card__header')+','+C(HERO,hc+' .card-header')+'{border:0!important;padding:40px 24px 8px!important;font-size:36px!important;line-height:42px!important;font-weight:900!important;letter-spacing:-.02em;color:var(--fxo-ink)!important}',
-  C(HERO,hc+' i.svg-icon')+'{display:inline-block!important;width:64px!important;height:64px!important;background-color:var(--fxo-surface-2)!important;border-radius:20px;background-size:40px!important;background-repeat:no-repeat!important;background-position:center!important;vertical-align:middle;margin:0 14px 0 0!important}',
+  C(HERO,hc+' i.svg-icon:not(button *):not(.el-button *)')+'{display:inline-block!important;width:64px!important;height:64px!important;background-color:var(--fxo-surface-2)!important;border-radius:20px;background-size:40px!important;background-repeat:no-repeat!important;background-position:center!important;vertical-align:middle;margin:0 14px 0 0!important}',
   C(HERO,hc+' .el-card__body')+'{padding:8px 24px 40px!important;font-size:16px;line-height:26px;color:var(--fxo-ink-4)}',
   C(HERO,hc+' .card-body>div')+'{display:flex!important;flex-direction:column;align-items:center;gap:18px}',
   C(HERO,hc+' .card-body>div>*')+'{margin:0!important}',
+  C(HERO,hc+' :is(button,.el-button) i.svg-icon')+'{background-color:transparent!important;box-shadow:none!important;border-radius:0!important}',   /* CTA icons (e.g. Team Group "Open Chat") stay bare, no white tile */
   C(HERO,hc+' .el-button--primary')+'{min-height:46px;padding:0 26px!important;font-size:15px!important;border-radius:999px!important}',
   /* OmniAI 360 launcher: navy feature panel + bento tiles with a live pulse on connected channels */
   C('launcher',LC+':nth-child(1)')+'{text-align:left;background:var(--fxo-rail)!important;color:#FFFFFF!important;margin-bottom:18px}',
@@ -1270,6 +1271,59 @@ var proJob=function(){   /* hide every "PRO", "BETA" and "NEW" sign (badges, tag
   }
 };
 
+var NOTERX=/leave a note|note for your teammates|reminder for yourself/i;
+/* Inbox note composer. Colours are set inline (with !important) so no theme or component stylesheet can win,
+   and the search also looks inside open shadow roots and same-origin frames. Originals are restored on Reply and on off(). */
+var NOTE={box:'background:#FFF7E6;border-radius:16px;box-shadow:inset 0 0 0 1px #FFB020',
+  field:'background:#FFF7E6;background-color:#FFF7E6;border-color:#FFB020;color:#8A5A00',
+  tab:'color:#8A5A00;font-weight:800;background:#FEF3ED;border-radius:999px;padding:2px 10px'};
+var noteRoots=function(){
+  var out=[D],seen=0;
+  for(var r=0;r<out.length&&r<40;r++){
+    var all=out[r].querySelectorAll('*');
+    for(var i=0;i<all.length;i++){var e=all[i];
+      if(e.shadowRoot&&out.indexOf(e.shadowRoot)<0)out.push(e.shadowRoot);
+      if(e.tagName==='IFRAME'){try{var d=e.contentDocument;if(d&&d.body&&out.indexOf(d)<0)out.push(d)}catch(x){}}
+    }
+  }
+  return out;
+};
+var isNoteField=function(t){
+  var ph=(t.getAttribute('placeholder')||t.getAttribute('data-placeholder')||t.placeholder||t.getAttribute('aria-placeholder')||'');
+  return NOTERX.test(ph);
+};
+var paint=function(e,css,kind){
+  if(e.getAttribute('data-fxo-note')===kind)return;
+  if(!e.hasAttribute('data-fxo-note-css'))e.setAttribute('data-fxo-note-css',e.getAttribute('style')||'');
+  css.split(';').forEach(function(d){var k=d.split(':');if(k[1])e.style.setProperty(k[0].trim(),k.slice(1).join(':').trim(),'important')});
+  e.setAttribute('data-fxo-note',kind);
+};
+var unpaint=function(e){
+  var o=e.getAttribute('data-fxo-note-css');
+  if(o)e.setAttribute('style',o);else e.removeAttribute('style');
+  e.removeAttribute('data-fxo-note-css');e.removeAttribute('data-fxo-note');
+};
+var noteState={fields:0,painted:0};
+var noteJob=function(){
+  if(Date.now()-(noteState.t||0)<300){clearTimeout(noteState.q);noteState.q=setTimeout(function(){if(S.on)noteJob()},320);return}   /* the deep search runs at most ~3 times a second */
+  noteState.t=Date.now();
+  var roots=noteRoots(),fields=[];
+  roots.forEach(function(r){[].forEach.call(r.querySelectorAll('textarea,input,[contenteditable="true"],[contenteditable=""]'),function(t){if(isNoteField(t))fields.push(t)})});
+  var keep=[];
+  fields.forEach(function(t){
+    var box=t.parentElement,k=0;   /* the composer: first ancestor that also holds the Send button */
+    for(var b=t.parentElement;b&&k<8;k++,b=b.parentElement){if(b.querySelector&&b.querySelector('button')&&/send/i.test(b.textContent||'')){box=b;break}}
+    paint(t,NOTE.field,'field');keep.push(t);
+    var inner=t.closest('.el-textarea,.el-input');if(inner&&inner!==box&&box.contains(inner)){paint(inner,'background:#FFF7E6;border-color:#FFB020','field');keep.push(inner)}
+    if(box&&box!==D.body){paint(box,NOTE.box,'box');keep.push(box);
+      [].forEach.call(box.querySelectorAll('*'),function(e){if(!e.childElementCount&&/^note$/i.test((e.textContent||'').trim())){paint(e,NOTE.tab,'tab');keep.push(e)}});
+    }
+  });
+  roots.forEach(function(r){[].forEach.call(r.querySelectorAll('[data-fxo-note]'),function(e){if(keep.indexOf(e)<0)unpaint(e)})});
+  noteState.fields=fields.length;noteState.painted=keep.length;
+};
+var noteUndo=function(){noteRoots().forEach(function(r){[].forEach.call(r.querySelectorAll('[data-fxo-note]'),unpaint)})};
+
 var apply=function(){
   S.t=0;S.last=Date.now();
   if(!S.on)return;
@@ -1290,6 +1344,7 @@ var apply=function(){
   try{channelJob()}catch(e){log('channel',e)}
   try{botListJob()}catch(e){log('bots',e)}
   try{proJob()}catch(e){log('pro',e)}
+  try{noteJob()}catch(e){log('note',e)}
   try{if(!W.__fxFlowsPage)SUBFLOWS.run()}catch(e){log('subflows',e)}
   try{if(p==='insights')INSIGHTS.run()}catch(e){log('insights',e)}
   try{if(p==='inbox'&&Date.now()-S.ib>500){S.ib=Date.now();INBOX.run()}}catch(e){log('inbox',e)}
@@ -1304,7 +1359,7 @@ var schedule=function(){
 var onHash=function(){clearTimeout(S.t);S.t=0;cancelAnimationFrame(S.q);S.q=0;apply()};
 
 var buildCSS=function(){
-  return 'html.fxo [data-fxo-pro]{display:none!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
+  return 'html.fxo [data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
 };
 
 var on=function(){
@@ -1315,7 +1370,7 @@ var on=function(){
   (D.head||H).appendChild(S.style);
   S.on=true;S.page='';S.hash=null;
   S.mo=new MutationObserver(schedule);
-  S.mo.observe(D.body,{childList:true,subtree:true});   /* body, not #spark-app: survives Vue replacing the mount element */
+  S.mo.observe(D.body,{childList:true,subtree:true,attributes:true,attributeFilter:['placeholder','data-placeholder']});   /* placeholder: Reply/Note switch in the Inbox composer */   /* body, not #spark-app: survives Vue replacing the mount element */
   W.addEventListener('hashchange',onHash);
   apply();
   return 'on';
@@ -1332,6 +1387,7 @@ var off=function(){
   [].forEach.call(D.querySelectorAll('[data-fxo-hid]'),function(h){h.style.removeProperty('display');h.removeAttribute('data-fxo-hid')});
   [].forEach.call(D.querySelectorAll('[data-fxo-shown]'),function(h){h.removeAttribute('data-fxo-shown')});
   [].forEach.call(D.querySelectorAll('[data-fxo-pro]'),function(h){h.removeAttribute('data-fxo-pro')});
+  try{noteUndo()}catch(e){}
   if(S.style&&S.style.parentNode)S.style.parentNode.removeChild(S.style);
   H.classList.remove('fxo','fxo-icons','fxo-ai-agent');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');
   [].forEach.call(D.querySelectorAll('[data-fxo-title]'),function(e){e.removeAttribute('data-fxo-title')});
@@ -1360,7 +1416,7 @@ var check=function(){
 };
 
 W.fxOmni={version:VERSION,on:on,off:off,check:check,
-  info:function(){return {version:VERSION,on:S.on,page:S.page,hash:location.hash,embedded:H.classList.contains('in-iframe'),legacyNeutralised:LEG.present,canvasLoop:CANVAS.running(),inbox:INBOX.info()}},
+  info:function(){return {version:VERSION,on:S.on,page:S.page,hash:location.hash,embedded:H.classList.contains('in-iframe'),legacyNeutralised:LEG.present,canvasLoop:CANVAS.running(),inbox:INBOX.info(),noteFields:noteState.fields,notePainted:noteState.painted}},
   preview:function(){return on()}};
 
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',on,{once:true});else on();
