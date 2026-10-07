@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v11.7 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v12.2 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -25,7 +25,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='11.7';
+var VERSION='12.2';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -140,7 +140,6 @@ S aside.el-aside.bg-transparent.border-light .el-menu-item>i,S aside.el-aside.bg
 
 /* ---- content: a canvas with display titles ---- */
 S #team-main .p-3:not(.el-card *):not(.card *),S main.el-main.p-3{padding:24px 28px!important}
-S [data-fxo-title]::before{content:attr(data-fxo-title);display:block;font-size:40px;line-height:44px;font-weight:900;letter-spacing:-.02em;color:var(--fxo-ink);margin:4px 0 20px}
 S .text-muted{color:var(--fxo-ink-3)!important}
 
 /* ---- cards: borderless white panels, 22px corners, soft entrance ---- */
@@ -293,36 +292,47 @@ var TEMPLATES=function(){
   C(HERO,hc+' .card-body>div>*')+'{margin:0!important}',
   C(HERO,hc+' :is(button,.el-button) i.svg-icon')+'{background-color:transparent!important;box-shadow:none!important;border-radius:0!important}',   /* CTA icons (e.g. Team Group "Open Chat") stay bare, no white tile */
   C(HERO,hc+' .el-button--primary')+'{min-height:46px;padding:0 26px!important;font-size:15px!important;border-radius:999px!important}',
-  /* OmniAI 360 launcher: navy feature panel + bento tiles with a live pulse on connected channels */
-  C('launcher',LC+':nth-child(1)')+'{text-align:left;background:var(--fxo-rail)!important;color:#FFFFFF!important;margin-bottom:18px}',
-  C('launcher',LC+':nth-child(1) .el-card__header')+'{border:0!important;padding:34px 34px 6px!important;font-size:40px!important;line-height:44px!important;font-weight:900!important;letter-spacing:-.02em;color:#FFFFFF!important}',
+  /* OmniAI 360 launcher (v12): compact hero with the CTA on the right, a channel summary line,
+     connected channels first, explicit status chips, even tiles with a footer action row */
+  C('launcher',LC+':nth-child(1)')+'{display:block!important;position:relative!important;text-align:left;background:radial-gradient(520px 220px at 100% 0,rgba(166,132,255,.30),transparent 70%),radial-gradient(420px 200px at 0 100%,rgba(36,228,187,.16),transparent 70%),#2C334C!important;color:#FFFFFF!important;margin-bottom:24px!important;padding:28px 240px 28px 32px!important;box-shadow:var(--fxo-e1)!important;min-height:0}',
+  C('launcher',LC+':nth-child(1) .el-card__header')+'{border:0!important;padding:0!important;font-size:28px!important;line-height:34px!important;font-weight:800!important;letter-spacing:-.01em;color:#FFFFFF!important}',
   C('launcher',LC+':nth-child(1) .el-card__header>div')+'{display:flex;align-items:center;gap:14px}',
-  C('launcher',LC+':nth-child(1) .el-card__header i.svg-icon')+'{display:inline-block!important;width:52px!important;height:52px!important;background-color:#FFFFFF!important;border-radius:16px;background-size:34px!important;background-position:center!important;background-repeat:no-repeat!important;margin:0!important}',
-  C('launcher',LC+':nth-child(1) .el-card__body')+'{padding:6px 34px 34px!important;font-size:16px;color:#E6ECF0}',
-  C('launcher',LC+':nth-child(1) .card-body>div')+'{display:flex!important;flex-direction:column;align-items:flex-start;gap:18px}',
-  C('launcher',LC+':nth-child(1) .card-body>div>*')+'{margin:0!important;color:#E6ECF0}',
-  C('launcher',LC+':nth-child(1) .el-button--primary')+'{min-height:46px;padding:0 26px!important;font-size:15px!important;border-radius:999px!important}',
-  C('launcher',LC+':nth-child(2)')+'{background:transparent!important;border:0!important;box-shadow:none!important}',
+  C('launcher',LC+':nth-child(1) .el-card__header i.svg-icon')+'{display:inline-block!important;flex:none;width:48px!important;height:48px!important;background-color:#FFFFFF!important;border-radius:14px;background-size:30px!important;background-position:center!important;background-repeat:no-repeat!important;margin:0!important}',
+  C('launcher',LC+':nth-child(1) .el-card__body')+','+C('launcher',LC+':nth-child(1) .card-body')+'{padding:0!important;position:static!important}',
+  C('launcher',LC+':nth-child(1) .card-body>div')+'{display:block!important;position:static!important;margin:8px 0 0 62px!important;padding:0!important;font-size:15px;line-height:22px;color:#E6ECF0!important;max-width:620px}',
+  C('launcher',LC+':nth-child(1) .card-body>div>*:not(:is(.el-button,button,:has(.el-button,button)))')+'{margin:0!important;color:#E6ECF0!important;font-size:15px;line-height:22px}',
+  C('launcher',LC+':nth-child(1) .card-body>div br')+'{display:none}',
+  /* the CTA (or whatever wraps it) floats at the right edge, vertically centred, whatever the product markup */
+  C('launcher',LC+':nth-child(1) .card-body>div>:is(.el-button,button,:has(.el-button,button))')+'{position:absolute!important;right:32px;top:50%;transform:translateY(-50%);margin:0!important}',
+  C('launcher',LC+':nth-child(1) .card-body>div>:has(.el-button,button):not(.el-button):not(button)')+'{padding:0!important;display:block!important}',
+  C('launcher',LC+':nth-child(1) .card-body>div :is(.el-button,button)')+'{margin:0!important;display:inline-flex!important;white-space:nowrap!important;min-height:48px;padding:0 28px!important;font-size:15px!important;border-radius:999px!important;box-shadow:0 10px 24px -12px #A684FF}',
+  C('launcher',LC+':nth-child(2)')+'{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;animation:none!important}',
   C('launcher',LC+':nth-child(2) .el-card__header')+'{border:0!important;padding:0 0 12px!important}',
-  C('launcher',LC+':nth-child(2) .el-card__body')+','+C('launcher',LC+':nth-child(2) .card-body')+'{padding:0!important}',
+  C('launcher',LC+':nth-child(2) .el-card__body')+','+C('launcher',LC+':nth-child(2) .card-body')+'{padding:0 0 24px!important;overflow:visible!important}',
   C('launcher',LC+':nth-child(2) table')+'{display:block;width:100%;border:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important}',
+  C('launcher',LC+':nth-child(2) table[data-fxo-sum]::before')+'{content:attr(data-fxo-sum);display:block;margin:0 2px 14px;font-size:13px;font-weight:600;color:#49545A;letter-spacing:.01em}',
   C('launcher',LC+':nth-child(2) thead')+'{display:none}',
-  C('launcher',LC+':nth-child(2) tbody')+'{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}',
-  C('launcher',LC+':nth-child(2) tbody tr')+'{display:flex;flex-direction:column;align-items:stretch;gap:6px;background:var(--fxo-surface)!important;border:0;border-radius:22px;padding:20px;min-width:0;min-height:168px;box-sizing:border-box;box-shadow:var(--fxo-e0);transition:transform .2s ease,box-shadow .2s ease;animation:fxoIn .4s ease both}',
-  C('launcher',LC+':nth-child(2) tbody tr:hover')+'{transform:translateY(-4px);box-shadow:var(--fxo-e1)}',
-  C('launcher',LC+':nth-child(2) tbody tr:nth-child(2)')+'{animation-delay:.04s}',
-  C('launcher',LC+':nth-child(2) tbody tr:nth-child(3)')+'{animation-delay:.08s}',
-  C('launcher',LC+':nth-child(2) tbody tr:nth-child(4)')+'{animation-delay:.12s}',
-  C('launcher',LC+':nth-child(2) tbody tr:nth-child(n+5)')+'{animation-delay:.16s}',
+  C('launcher',LC+':nth-child(2) tbody')+'{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}',
+  C('launcher',LC+':nth-child(2) tbody tr')+'{display:flex;flex-direction:column;align-items:stretch;gap:16px;background:#FFFFFF!important;border:0;border-radius:20px;padding:18px 18px 16px;min-width:0;min-height:0;box-sizing:border-box;position:relative;box-shadow:0 1px 2px #E6ECF0,inset 0 0 0 1px #EEF1F6;transition:transform .18s ease,box-shadow .18s ease;animation:fxoIn .35s ease both}',
+  C('launcher',LC+':nth-child(2) tbody tr[data-fxo-ch=on]')+'{order:-1;box-shadow:0 1px 2px #E6ECF0,inset 0 0 0 1px #BEF0E1}',
+  C('launcher',LC+':nth-child(2) tbody tr:hover')+'{transform:translateY(-2px);box-shadow:var(--fxo-e1),inset 0 0 0 1px #E6EAF2}',
   C('launcher',LC+':nth-child(2) td')+'{display:block;padding:0!important;border:0!important;width:auto!important;text-align:left!important;min-width:0;background:transparent!important}',
-  C('launcher',LC+':nth-child(2) td:nth-child(1)')+'{font-size:16px;font-weight:800;color:var(--fxo-ink)}',
-  C('launcher',LC+':nth-child(2) td:nth-child(1)>div')+'{display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;padding-right:18px}',
-  C('launcher',LC+':nth-child(2) td:nth-child(1) .svg-icon')+'{display:inline-block!important;flex:none;width:44px!important;height:44px!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;margin:0 0 6px!important;flex-basis:100%;max-width:44px}',
-  C('launcher',LC+':nth-child(2) tbody tr:has(.el-button--danger) td:nth-child(1)>div::after')+'{content:"";position:absolute;right:2px;top:4px;width:8px;height:8px;border-radius:50%;background:#24E4BB;box-shadow:0 0 0 4px #E9FCF8;animation:fxoPulse 2s ease infinite}',
-  C('launcher',LC+':nth-child(2) td:nth-child(2)')+'{font-size:13px;color:var(--fxo-ink-3);min-height:18px}',
-  C('launcher',LC+':nth-child(2) td:nth-child(3)')+'{margin-top:auto;padding-top:10px!important}',
-  C('launcher',LC+':nth-child(2) td:nth-child(3)>div')+'{display:flex!important;flex-wrap:wrap;gap:8px;justify-content:flex-start}',
-  C('launcher',LC+':nth-child(2) td:nth-child(3) .el-button')+'{margin:0!important;white-space:normal!important;text-align:left;height:auto!important;max-width:100%!important;padding:7px 14px!important;border-radius:12px!important}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1)')+'{font-size:16px;font-weight:700;color:#0A0E1A}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1)')+'{min-height:40px;line-height:20px}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-head]')+','+C('launcher',LC+':nth-child(2) td:nth-child(1)[data-fxo-head]')+'{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;flex-wrap:nowrap!important;min-width:0;margin:0!important;padding:0!important;position:static!important;text-align:left!important}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-head] *')+'{margin-left:0!important;margin-top:0!important;margin-bottom:0!important;font-weight:inherit!important;font-size:inherit!important;line-height:20px!important;color:inherit!important}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-head]::after')+','+C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-head]::before')+'{content:none!important;display:none!important}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-icobox]')+'{display:block!important;position:relative!important;flex:0 0 40px!important;width:40px!important;height:40px!important;min-width:40px!important;margin:0!important;padding:0!important}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-ico]')+'{display:block!important;flex:0 0 40px!important;width:40px!important;height:40px!important;max-width:40px!important;min-width:40px!important;margin:0!important;padding:0!important;position:static!important;float:none!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;object-fit:contain;border-radius:10px}',
+  C('launcher',LC+':nth-child(2) td:nth-child(1) [data-fxo-icobox] :is(i.svg-icon,img,svg):not([data-fxo-ico])')+'{position:absolute!important;right:-4px;bottom:-4px;width:16px!important;height:16px!important;min-width:16px!important;max-width:16px!important;margin:0!important;border-radius:50%}',
+  C('launcher',LC+':nth-child(2) tbody tr[data-fxo-ch=on] td:nth-child(1)')+'{padding-right:104px!important}',
+  C('launcher',LC+':nth-child(2) tbody tr[data-fxo-ch=on]::after')+'{content:"\\25CF  Connected";position:absolute;top:27px;right:18px;font-size:11px;font-weight:700;line-height:22px;padding:0 10px;border-radius:999px;background:#E9FCF8;color:#057A5E;pointer-events:none}',
+  C('launcher',LC+':nth-child(2) td:nth-child(2)')+'{font-size:13px;line-height:18px;color:#7F848D;min-height:18px;margin:-10px 0 0 52px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+  C('launcher',LC+':nth-child(2) tbody tr[data-fxo-ch=on] td:nth-child(2)')+'{color:#49545A;font-weight:600}',
+  C('launcher',LC+':nth-child(2) td:nth-child(3)')+'{margin-top:auto;padding-top:12px!important;border-top:1px solid #EEF1F6!important;position:relative;top:0}',
+  C('launcher',LC+':nth-child(2) td:nth-child(3)')+'{margin-top:auto}',
+  C('launcher',LC+':nth-child(2) td:nth-child(3)>div')+'{display:flex!important;flex-wrap:wrap;gap:8px;justify-content:flex-end}',
+  C('launcher',LC+':nth-child(2) td:nth-child(3) .el-button')+'{margin:0!important;white-space:nowrap!important;height:36px!important;min-height:36px;max-width:100%!important;padding:0 16px!important;border-radius:10px!important;font-size:13px!important}',
   /* Connect Channels (platform classes) */
   P+' .connect-channels .connect-panel{background:transparent!important;border:0!important;box-shadow:none!important}',
   P+' .connect-channels .connect-panel>.el-card__body{padding:0!important}',
@@ -1222,17 +1232,8 @@ var legacyOn=function(){
 var S={on:false,style:null,mo:null,q:0,t:0,last:0,page:'',hash:null,bot:false,ib:0};
 
 /* per-mutation jobs (all cheap, all idempotent) */
-var titleJob=function(){
-  var side=D.querySelector('#spark-app aside.el-aside.bg-transparent.border-light');
-  var pane=side&&side.parentElement?side.parentElement.querySelector('main.el-main.p-3'):null;
-  [].forEach.call(D.querySelectorAll('[data-fxo-title]'),function(e){if(e!==pane)e.removeAttribute('data-fxo-title')});
-  if(!pane)return;
-  var act=D.querySelector('#spark-app aside.el-aside.bg-transparent.border-light .el-menu-item.is-active');
-  var label=act?(act.textContent||'').replace(/\s+/g,' ').replace(/\b(PRO|BETA|NEW)\b/g,'').trim():'';
-  var top=pane.getBoundingClientRect().top;
-  var has=[].some.call(pane.querySelectorAll('h1,h2,h3,h4,h5,.page-title,.el-tabs__header,ul.el-menu--horizontal'),function(e){var r=e.getBoundingClientRect();return r.height>0&&r.top-top<90});
-  if(label&&!has){if(pane.getAttribute('data-fxo-title')!==label)pane.setAttribute('data-fxo-title',label)}
-  else if(pane.hasAttribute('data-fxo-title'))pane.removeAttribute('data-fxo-title');
+var titleJob=function(){   /* page titles removed (v11.9): the shell / 360 header already names the page; only clean up old marks */
+  var t=D.querySelectorAll('[data-fxo-title]');for(var i=0;i<t.length;i++)t[i].removeAttribute('data-fxo-title');
 };
 var channelJob=function(){
   /* connected channel pages: a Disconnect button or the WhatsApp number/provider table marks the detail layout */
@@ -1336,6 +1337,37 @@ var noteJob=function(){
 };
 var noteUndo=function(){noteRoots().forEach(function(r){[].forEach.call(r.querySelectorAll('[data-fxo-note]'),unpaint)})};
 
+var wsTabsJob=function(){   /* 360 embed only: the Workspace Console already shows these tabs, so OmniAI's own workspace-settings tab bar is hidden there */
+  var emb=H.classList.contains('in-iframe');
+  [].forEach.call(D.querySelectorAll('ul.el-menu--horizontal.el-menu'),function(u){
+    var txt=(u.textContent||'').replace(/\s+/g,' ');
+    var ws=/Business Hours/i.test(txt)&&/Agent Groups/i.test(txt)&&/Store Locations/i.test(txt);
+    var hid=u.hasAttribute('data-fxo-wstabs');
+    if(ws&&emb&&!hid){u.setAttribute('data-fxo-wstabs',u.style.getPropertyValue('display'));u.style.setProperty('display','none','important')}
+    else if(hid&&(!ws||!emb)){var o=u.getAttribute('data-fxo-wstabs');if(o)u.style.setProperty('display',o);else u.style.removeProperty('display');u.removeAttribute('data-fxo-wstabs')}
+  });
+};
+
+var launchJob=function(){   /* 360 launcher: mark connected channels and write the summary line (attributes only; no nodes are added to Vue lists) */
+  if(S.page!=='launcher')return;
+  var cards=D.querySelectorAll('#team-main .p-3>div>.content-card');var c=cards[1];if(!c)return;
+  var tb=c.querySelector('table');if(!tb)return;
+  var rows=tb.querySelectorAll('tbody tr'),on=0;
+  for(var i=0;i<rows.length;i++){var r=rows[i],td=r.children[1];
+    var live=!!r.querySelector('.el-button--danger')||!!(td&&(td.textContent||'').trim());
+    if(live)on++;var v=live?'on':'off';if(r.getAttribute('data-fxo-ch')!==v)r.setAttribute('data-fxo-ch',v)}
+  for(var q=0;q<rows.length;q++){var td1=rows[q].children[0];if(!td1)continue;
+    var ico=td1.querySelector('i.svg-icon,img,svg');if(!ico||ico.closest('button'))continue;
+    if(!ico.hasAttribute('data-fxo-ico'))ico.setAttribute('data-fxo-ico','');
+    var box=null;for(var a=ico.parentElement;a&&a!==td1&&!(a.textContent||'').trim();a=a.parentElement)box=a;   /* wrapper(s) that hold only icons */
+    if(box&&!box.hasAttribute('data-fxo-icobox'))box.setAttribute('data-fxo-icobox','');
+    var head=(box||ico).parentElement;   /* the row that holds icon + name (may be the cell itself) */
+    if(head&&!head.hasAttribute('data-fxo-head'))head.setAttribute('data-fxo-head','');
+  }
+  var sum=rows.length?(on+' connected  \u00B7  '+(rows.length-on)+' available'):'';
+  if(tb.getAttribute('data-fxo-sum')!==sum)tb.setAttribute('data-fxo-sum',sum);
+};
+
 var apply=function(){
   S.t=0;S.last=Date.now();
   if(!S.on)return;
@@ -1356,6 +1388,8 @@ var apply=function(){
   try{channelJob()}catch(e){log('channel',e)}
   try{botListJob()}catch(e){log('bots',e)}
   try{proJob()}catch(e){log('pro',e)}
+  try{launchJob()}catch(e){log('launch',e)}
+  try{wsTabsJob()}catch(e){log('wstabs',e)}
   try{noteJob()}catch(e){log('note',e)}
   try{if(!W.__fxFlowsPage)SUBFLOWS.run()}catch(e){log('subflows',e)}
   try{if(p==='insights')INSIGHTS.run()}catch(e){log('insights',e)}
@@ -1401,6 +1435,8 @@ var off=function(){
   [].forEach.call(D.querySelectorAll('[data-fxo-pro]'),function(h){var o=(h.getAttribute('data-fxo-pro')||'|').split('|');if(o[0])h.style.setProperty('display',o[0],o[1]);else h.style.removeProperty('display');h.removeAttribute('data-fxo-pro')});
   [].forEach.call(D.querySelectorAll('[data-fxo-pro-pseudo]'),function(h){h.removeAttribute('data-fxo-pro-pseudo')});
   try{noteUndo()}catch(e){}
+  [].forEach.call(D.querySelectorAll('[data-fxo-ch],[data-fxo-sum],[data-fxo-ico],[data-fxo-icobox],[data-fxo-head]'),function(e){['data-fxo-ch','data-fxo-sum','data-fxo-ico','data-fxo-icobox','data-fxo-head'].forEach(function(k){e.removeAttribute(k)})});
+  [].forEach.call(D.querySelectorAll('[data-fxo-wstabs]'),function(u){var o=u.getAttribute('data-fxo-wstabs');if(o)u.style.setProperty('display',o);else u.style.removeProperty('display');u.removeAttribute('data-fxo-wstabs')});
   if(S.style&&S.style.parentNode)S.style.parentNode.removeChild(S.style);
   H.classList.remove('fxo','fxo-icons','fxo-ai-agent');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');
   [].forEach.call(D.querySelectorAll('[data-fxo-title]'),function(e){e.removeAttribute('data-fxo-title')});
