@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v11.6 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v11.7 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -25,11 +25,10 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='11.6';
+var VERSION='11.7';
 if(W.fxOmni&&W.fxOmni.version){
-  if(W.fxOmni.version===VERSION){console.info('[fxOmni] already loaded (no second copy started):',W.fxOmni.on(),W.fxOmni.info());return}
+  if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
-  console.info('[fxOmni] replacing v'+W.fxOmni.version+' with v'+VERSION);
   try{W.fxOmni.off()}catch(e){}
   var oldStyle=D.getElementById('fx-omniai-unified');if(oldStyle)oldStyle.parentNode.removeChild(oldStyle);
   try{delete W.fxOmni}catch(e){W.fxOmni=undefined}
@@ -1262,13 +1261,26 @@ var botListJob=function(){   /* the approved All Bots list view: same behaviour 
 };
 
 var TAGRX=/^(PRO|BETA|NEW)$/i;
-var proJob=function(){   /* hide every "PRO", "BETA" and "NEW" sign (badges, tags, pills) everywhere; the product's own plan limits are unchanged */
-  var c=D.querySelectorAll('.badge:not([data-fxo-pro]),.el-tag:not([data-fxo-pro]),sup:not([data-fxo-pro]),small:not([data-fxo-pro]),span:not([data-fxo-pro]),.pro-badge:not([data-fxo-pro])');
-  for(var i=0;i<c.length;i++){var e=c[i];
-    if(e.childElementCount===0){var t=(e.textContent||'').trim();   /* a sign sits beside other text; a lone "New" that is a button or tab label is kept */
-      if(TAGRX.test(t)&&!e.closest('button,.el-button')&&(e.parentElement&&(e.parentElement.classList.contains('pro-badge')||(e.parentElement.textContent||'').trim()!==t)))e.setAttribute('data-fxo-pro','')}
-    else if(e.classList.contains('pro-badge')&&/^(PRO|BETA|NEW)+$/i.test((e.textContent||'').replace(/\s+/g,'')))e.setAttribute('data-fxo-pro','');
+var proState={t:0,q:0};
+var proJob=function(){   /* hide every "PRO", "BETA" and "NEW" sign (badges, tags, pills, corner ribbons) everywhere; the product's own plan limits are unchanged */
+  if(Date.now()-proState.t<250){clearTimeout(proState.q);proState.q=setTimeout(function(){if(S.on)proJob()},270);return}
+  proState.t=Date.now();
+  var mark=function(e){if(e&&e!==D.body&&!e.hasAttribute('data-fxo-pro')){e.setAttribute('data-fxo-pro',e.style.getPropertyValue('display')+'|'+e.style.getPropertyPriority('display'));e.style.setProperty('display','none','important')}};   /* inline: no theme rule can show it again */
+  /* 1. any element whose only text is the sign (any tag: span, div, i, label, sup, ...) */
+  var w=D.createTreeWalker(D.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){return TAGRX.test((n.nodeValue||'').trim())?1:3}}),n;
+  while((n=w.nextNode())){
+    var e=n.parentElement;if(!e||e.closest('[data-fxo-pro],script,style,textarea,[contenteditable]'))continue;
+    var t=(e.textContent||'').trim();if(!TAGRX.test(t))continue;   /* the sign is the whole element */
+    if(t!=='NEW'&&/^new$/i.test(t)&&!(e.closest('.badge,.el-tag,sup,[class*=badge],[class*=tag],[class*=pill],[class*=ribbon],[class*=label]')))continue;   /* plain "New" (e.g. a ticket status) is data, not a sign */
+    var host=e.closest('button,.el-button,a,[role=tab],.el-menu-item,.el-tabs__item,.el-radio-button');
+    if(host&&(host.textContent||'').trim()===t)continue;   /* a lone "New" that IS a button / tab / link label is kept */
+    for(var k=0,p=e.parentElement;k<3&&p&&p!==D.body&&!p.matches('button,.el-button,a,[role=tab],.el-menu-item,.el-tabs__item,.el-radio-button')&&(p.textContent||'').trim().replace(/\s+/g,'')===t&&p.children.length===1;k++,p=p.parentElement)e=p;   /* hide the pill wrapper too, not just its text */
+    mark(e);
   }
+  /* 2. signs drawn with CSS (::before / ::after content) on badge-like elements */
+  [].forEach.call(D.querySelectorAll('[class*=pro]:not([data-fxo-pro-pseudo]),[class*=Pro]:not([data-fxo-pro-pseudo]),[class*=beta]:not([data-fxo-pro-pseudo]),[class*=badge]:not([data-fxo-pro-pseudo]),[class*=new]:not([data-fxo-pro-pseudo])'),function(e){
+    ['::before','::after'].forEach(function(ps){var c=getComputedStyle(e,ps).content||'';if(/^["'](PRO|BETA|NEW)["']$/i.test(c.trim()))e.setAttribute('data-fxo-pro-pseudo',(e.getAttribute('data-fxo-pro-pseudo')||'')+ps.replace(/:/g,''))});
+  });
 };
 
 var NOTERX=/leave a note|note for your teammates|reminder for yourself/i;
@@ -1359,12 +1371,12 @@ var schedule=function(){
 var onHash=function(){clearTimeout(S.t);S.t=0;cancelAnimationFrame(S.q);S.q=0;apply()};
 
 var buildCSS=function(){
-  return 'html.fxo [data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
+  return 'html.fxo body [data-fxo-pro][data-fxo-pro],html.fxo body #spark-app#spark-app [data-fxo-pro][data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-pro-pseudo*=before]::before,html.fxo [data-fxo-pro-pseudo*=after]::after{display:none!important;content:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS;
 };
 
 var on=function(){
   if(S.on)return 'already on';
-  if(urlOff()){console.info('[fxOmni] fx=off in the URL: not applied');return 'off (url)'}
+  if(urlOff())return 'off (url)';
   legacyOff();
   if(!S.style){S.style=D.createElement('style');S.style.id='fx-omniai-unified';S.style.textContent=buildCSS()}
   (D.head||H).appendChild(S.style);
@@ -1386,7 +1398,8 @@ var off=function(){
   try{INBOX.undo()}catch(e){}
   [].forEach.call(D.querySelectorAll('[data-fxo-hid]'),function(h){h.style.removeProperty('display');h.removeAttribute('data-fxo-hid')});
   [].forEach.call(D.querySelectorAll('[data-fxo-shown]'),function(h){h.removeAttribute('data-fxo-shown')});
-  [].forEach.call(D.querySelectorAll('[data-fxo-pro]'),function(h){h.removeAttribute('data-fxo-pro')});
+  [].forEach.call(D.querySelectorAll('[data-fxo-pro]'),function(h){var o=(h.getAttribute('data-fxo-pro')||'|').split('|');if(o[0])h.style.setProperty('display',o[0],o[1]);else h.style.removeProperty('display');h.removeAttribute('data-fxo-pro')});
+  [].forEach.call(D.querySelectorAll('[data-fxo-pro-pseudo]'),function(h){h.removeAttribute('data-fxo-pro-pseudo')});
   try{noteUndo()}catch(e){}
   if(S.style&&S.style.parentNode)S.style.parentNode.removeChild(S.style);
   H.classList.remove('fxo','fxo-icons','fxo-ai-agent');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');
@@ -1420,5 +1433,4 @@ W.fxOmni={version:VERSION,on:on,off:off,check:check,
   preview:function(){return on()}};
 
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',on,{once:true});else on();
-console.info('[fxOmni] v'+VERSION+' loaded —',S.on?'on ('+S.page+')':'waiting','· undo: fxOmni.off()');
 })();
