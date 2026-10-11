@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v12.4 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v12.7 · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -25,7 +25,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='12.4';
+var VERSION='12.7';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -294,13 +294,13 @@ var TEMPLATES=function(){
   C(HERO,hc+' .el-button--primary')+'{min-height:46px;padding:0 26px!important;font-size:15px!important;border-radius:999px!important}',
   /* OmniAI 360 launcher (v12): compact hero with the CTA on the right, a channel summary line,
      connected channels first, explicit status chips, even tiles with a footer action row */
-  C('launcher',LC+':nth-child(1)')+'{display:block!important;position:relative!important;text-align:left;background:radial-gradient(520px 220px at 100% 0,rgba(166,132,255,.30),transparent 70%),radial-gradient(420px 200px at 0 100%,rgba(36,228,187,.16),transparent 70%),#2C334C!important;color:#FFFFFF!important;margin-bottom:24px!important;padding:28px 240px 28px 32px!important;box-shadow:var(--fxo-e1)!important;min-height:0}',
-  C('launcher',LC+':nth-child(1) .el-card__header')+'{border:0!important;padding:0!important;font-size:28px!important;line-height:34px!important;font-weight:800!important;letter-spacing:-.01em;color:#FFFFFF!important}',
+  C('launcher',LC+':nth-child(1)')+'{display:block!important;position:relative!important;text-align:left;background:radial-gradient(520px 220px at 100% 0,rgba(166,132,255,.12),transparent 70%),radial-gradient(420px 200px at 0 100%,rgba(36,228,187,.08),transparent 70%),#FFFFFF!important;color:#0A0E1A!important;margin-bottom:24px!important;padding:28px 240px 28px 32px!important;box-shadow:0 1px 2px #E6ECF0,inset 0 0 0 1px #EEF1F6!important;min-height:0}',
+  C('launcher',LC+':nth-child(1) .el-card__header')+'{border:0!important;padding:0!important;font-size:28px!important;line-height:34px!important;font-weight:800!important;letter-spacing:-.01em;color:#0A0E1A!important}',
   C('launcher',LC+':nth-child(1) .el-card__header>div')+'{display:flex;align-items:center;gap:14px}',
-  C('launcher',LC+':nth-child(1) .el-card__header i.svg-icon')+'{display:inline-block!important;flex:none;width:48px!important;height:48px!important;background-color:#FFFFFF!important;border-radius:14px;background-size:30px!important;background-position:center!important;background-repeat:no-repeat!important;margin:0!important}',
+  C('launcher',LC+':nth-child(1) .el-card__header i.svg-icon')+'{display:inline-block!important;flex:none;width:44px!important;height:44px!important;background-color:transparent!important;border-radius:0;box-shadow:none!important;background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;margin:0!important}',
   C('launcher',LC+':nth-child(1) .el-card__body')+','+C('launcher',LC+':nth-child(1) .card-body')+'{padding:0!important;position:static!important}',
-  C('launcher',LC+':nth-child(1) .card-body>div')+'{display:block!important;position:static!important;margin:8px 0 0 62px!important;padding:0!important;font-size:15px;line-height:22px;color:#E6ECF0!important;max-width:620px}',
-  C('launcher',LC+':nth-child(1) .card-body>div>*:not(:is(.el-button,button,:has(.el-button,button)))')+'{margin:0!important;color:#E6ECF0!important;font-size:15px;line-height:22px}',
+  C('launcher',LC+':nth-child(1) .card-body>div')+'{display:block!important;position:static!important;margin:8px 0 0 58px!important;padding:0!important;font-size:15px;line-height:22px;color:#49545A!important;max-width:620px}',
+  C('launcher',LC+':nth-child(1) .card-body>div>*:not(:is(.el-button,button,:has(.el-button,button)))')+'{margin:0!important;color:#49545A!important;font-size:15px;line-height:22px}',
   C('launcher',LC+':nth-child(1) .card-body>div br')+'{display:none}',
   /* the CTA (or whatever wraps it) floats at the right edge, vertically centred, whatever the product markup */
   C('launcher',LC+':nth-child(1) .card-body>div>:is(.el-button,button,:has(.el-button,button))')+'{position:absolute!important;right:32px;top:50%;transform:translateY(-50%);margin:0!important}',
@@ -1376,13 +1376,33 @@ var launchJob=function(){   /* 360 launcher: mark connected channels and write t
   if(tb.getAttribute('data-fxo-sum')!==sum)tb.setAttribute('data-fxo-sum',sum);
 };
 
-var HIDE_ITEMS=/^change theme$/i;   /* menu entries removed from the product's menus (FlexiBuilder menu: "Change Theme") */
+var HIDE_ITEMS=/^(change theme|(delete|remove|export|download)( selected| all)? (users?|contacts?|subscribers?|leads?)( to (csv|excel|xlsx?))?)$/i;   /* also: no delete / export of contacts anywhere */   /* menu entries removed from the product's menus (FlexiBuilder menu: "Change Theme") */
 var hideItemsJob=function(){
-  var c=D.querySelectorAll('.el-dropdown-menu__item:not([data-fxo-hideitem]),.el-menu-item:not([data-fxo-hideitem]),.el-submenu__title:not([data-fxo-hideitem]),[role=menuitem]:not([data-fxo-hideitem]),.dropdown-item:not([data-fxo-hideitem]),.el-popover li:not([data-fxo-hideitem]),.el-popover a:not([data-fxo-hideitem])');
+  var c=D.querySelectorAll('.el-dropdown-menu__item:not([data-fxo-hideitem]),.el-menu-item:not([data-fxo-hideitem]),.el-submenu__title:not([data-fxo-hideitem]),[role=menuitem]:not([data-fxo-hideitem]),.dropdown-item:not([data-fxo-hideitem]),button:not([data-fxo-hideitem]),.el-button:not([data-fxo-hideitem]),.el-popover li:not([data-fxo-hideitem]),.el-popover a:not([data-fxo-hideitem])');
   for(var i=0;i<c.length;i++){var e=c[i];if(!HIDE_ITEMS.test((e.textContent||'').replace(/\s+/g,' ').trim()))continue;
     var t=e.closest('.el-submenu')&&e.classList.contains('el-submenu__title')?e.closest('.el-submenu'):e;
     t.setAttribute('data-fxo-hideitem',t.style.getPropertyValue('display')+'|'+t.style.getPropertyPriority('display'));t.style.setProperty('display','none','important');
     if(t!==e)e.setAttribute('data-fxo-hideitem','|');
+  }
+};
+
+/* Contacts list: hide the icon-only Export (download) and Delete (trash) toolbar buttons. The page is recognised by its own
+   controls (Create New User / Bulk Action / "Last user interaction"), so delete buttons on other pages are untouched. */
+var contactsToolsJob=function(){
+  if(Date.now()-(contactsToolsJob.t||0)<300){clearTimeout(contactsToolsJob.q);contactsToolsJob.q=setTimeout(function(){if(S.on)contactsToolsJob()},320);return}
+  contactsToolsJob.t=Date.now();
+  var panes=D.querySelectorAll('main.el-main');
+  for(var i=0;i<panes.length;i++){var m=panes[i];
+    var t=(m.textContent||'');if(!/Create New User|Bulk Action|Last user interaction/i.test(t))continue;
+    var bs=m.querySelectorAll('button:not([data-fxo-hideitem]),.el-button:not([data-fxo-hideitem])');
+    for(var k=0;k<bs.length;k++){var b=bs[k];if((b.textContent||'').trim())continue;   /* icon-only buttons */
+      if(b.closest('table,.el-table,.el-table__body,tbody'))continue;                   /* not row actions inside the list */
+      var sig=(b.innerHTML||'')+' '+(b.getAttribute('title')||'')+' '+(b.getAttribute('aria-label')||'');
+      [b,b.parentElement].forEach(function(x){var id=x&&x.getAttribute&&x.getAttribute('aria-describedby');var tip=id&&D.getElementById(id);if(tip)sig+=' '+tip.textContent;if(x&&x.getAttribute)sig+=' '+(x.getAttribute('title')||'')+' '+(x.getAttribute('data-original-title')||'')+' '+(x.getAttribute('content')||'')});   /* tooltip text: "Export" / "Delete" */
+      if(/download|export|trash|delete|remove|bin\b|el-icon-delete|fa-trash|fa-download|cloud-download|file-export/i.test(sig)){
+        b.setAttribute('data-fxo-hideitem',b.style.getPropertyValue('display')+'|'+b.style.getPropertyPriority('display'));b.style.setProperty('display','none','important');
+      }
+    }
   }
 };
 
@@ -1407,6 +1427,7 @@ var apply=function(){
   try{botListJob()}catch(e){log('bots',e)}
   try{proJob()}catch(e){log('pro',e)}
   try{hideItemsJob()}catch(e){log('hideitems',e)}
+  try{contactsToolsJob()}catch(e){log('contacts',e)}
   try{launchJob()}catch(e){log('launch',e)}
   try{wsTabsJob()}catch(e){log('wstabs',e)}
   try{noteJob()}catch(e){log('note',e)}
