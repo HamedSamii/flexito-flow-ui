@@ -25,7 +25,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='16.1';
+var VERSION='16.3';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -1425,7 +1425,14 @@ var wsJob=function(){
   wsState.t=Date.now();
   var leaf=function(root,re){return [].filter.call(root.querySelectorAll('*'),function(x){return !x.childElementCount&&re.test((x.textContent||'').trim())})};
   /* 1. filter rails: the product's .df-sidebar, or any column that holds both "Starred" and a "Status" heading */
-  var rails=[].slice.call(D.querySelectorAll('.df-sidebar'));
+  /* only conversation filter rails qualify (docked in the Inbox, or carrying "Starred" / a Status group); other .df-sidebar
+     columns such as the Flows "Labels" panel keep the product's own look, and lose any tags an earlier pass gave them */
+  var WS_KEYS=['data-fxo-rail','data-fxo-fhead','data-fxo-fitem','data-fxo-ffirst','data-fxo-count','data-fxo-ftop','data-fxo-fwrap','data-fxo-st'];
+  var rails=[].filter.call(D.querySelectorAll('.df-sidebar'),function(r){
+    var ok=!!r.closest('.rooms-container')||leaf(r,/(^|\W)starred$/i).length>0||leaf(r,/^status$/i).length>0;
+    if(!ok&&r.hasAttribute('data-fxo-rail'))[r].concat([].slice.call(r.querySelectorAll('*'))).forEach(function(e){WS_KEYS.forEach(function(k){if(e.hasAttribute(k))e.removeAttribute(k)})});
+    return ok;
+  });
   rails.forEach(function(r){
     wsTag(r,'data-fxo-rail',r.closest('.rooms-container')?'docked':'card');
     var head=null,items=r.querySelectorAll('.el-dropdown-menu__item');
@@ -1460,7 +1467,7 @@ var wsJob=function(){
     wsTag(it,'data-fxo-st',k);
   })});
   if(sig)[].forEach.call(D.querySelectorAll('.rooms-container *,main table td,main table td *,main .el-table td *'),function(x){
-    if(!x.childElementCount&&/^\+?[\d][\d\s-]{7,}$/.test((x.textContent||'').trim()))wsTag(x,'data-fxo-mono','1');
+    if(!x.childElementCount&&/^\+?[\d][\d\s-]{7,}$/.test((x.textContent||'').trim())){var c=x.closest('td');wsTag(x,'data-fxo-mono',c&&(c.textContent||'').trim()!==(x.textContent||'').trim()?'sub':'1')}
   });
   /* 2. empty states: list ("No chats" / "No Data") and the conversation placeholder */
   leaf(D.body,/^(no chats|no data|no conversations?|no contacts?)$/i).forEach(function(e){
@@ -1470,11 +1477,25 @@ var wsJob=function(){
   leaf(D.body,/^welcome to /i).forEach(function(e){
     for(var box=e.parentElement,k=0;box&&k<5;k++,box=box.parentElement){if(box.querySelector('img')){wsTag(box,'data-fxo-welcome','1');wsTag(e,'data-fxo-welcome-text','1');break}}
   });
+  /* 3b. contacts tables: the name cell (name · phone/ID · status chip) becomes one tidy block: name and status on one line,
+     the ID under it. Only attributes; the product's own nodes stay where they are. */
+  if(sig)[].forEach.call(D.querySelectorAll('main td'),function(td){
+    if(td.hasAttribute('data-fxo-ucell'))return;
+    var st=[].filter.call(td.querySelectorAll('*'),function(x){return !x.childElementCount&&/^(open|pending|done|closed|resolved|snoozed|spam|invalid|unassigned|assigned)$/i.test((x.textContent||'').trim())})[0];
+    if(!st)return;
+    var sb=st;while(sb.parentElement&&sb.parentElement!==td&&sb.parentElement.children.length===1)sb=sb.parentElement;
+    var box=sb.parentElement;if(!box||box===td.parentElement)return;
+    var kids=[].filter.call(box.children,function(k){return k!==sb&&(k.textContent||'').trim()});if(!kids.length)return;
+    wsTag(td,'data-fxo-ucell','1');wsTag(box,'data-fxo-ubox','1');
+    var t=(st.textContent||'').trim().toLowerCase();
+    wsTag(sb,'data-fxo-ustat',/^open/.test(t)?'open':/^(pending|snoozed|unassigned)/.test(t)?'warn':/^(done|closed|resolved|assigned)/.test(t)?'ok':'no');
+    kids.forEach(function(k,i){wsTag(k,i===0?'data-fxo-uname':'data-fxo-usub','1')});
+  });
   /* 3. contacts tables: the "Avatar" column header carries no information */
   [].forEach.call(D.querySelectorAll('th'),function(th){if(/^avatar$/i.test((th.textContent||'').trim()))wsTag(th,'data-fxo-quiet','1')});
 };
-var wsUndo=function(){H.classList.remove('fxo-signal');var fl=D.getElementById('fxo-signal-font');if(fl)fl.remove();[].forEach.call(D.querySelectorAll('[data-fxo-rail],[data-fxo-fhead],[data-fxo-fitem],[data-fxo-ffirst],[data-fxo-count],[data-fxo-ftop],[data-fxo-empty],[data-fxo-welcome],[data-fxo-welcome-text],[data-fxo-quiet],[data-fxo-fwrap],[data-fxo-st],[data-fxo-mono]'),function(e){
-  ['data-fxo-rail','data-fxo-fhead','data-fxo-fitem','data-fxo-ffirst','data-fxo-count','data-fxo-ftop','data-fxo-empty','data-fxo-welcome','data-fxo-welcome-text','data-fxo-quiet','data-fxo-fwrap','data-fxo-st','data-fxo-mono'].forEach(function(k){e.removeAttribute(k)});
+var wsUndo=function(){H.classList.remove('fxo-signal');var fl=D.getElementById('fxo-signal-font');if(fl)fl.remove();[].forEach.call(D.querySelectorAll('[data-fxo-rail],[data-fxo-fhead],[data-fxo-fitem],[data-fxo-ffirst],[data-fxo-count],[data-fxo-ftop],[data-fxo-empty],[data-fxo-welcome],[data-fxo-welcome-text],[data-fxo-quiet],[data-fxo-fwrap],[data-fxo-st],[data-fxo-mono],[data-fxo-ucell],[data-fxo-ubox],[data-fxo-ustat],[data-fxo-uname],[data-fxo-usub]'),function(e){
+  ['data-fxo-rail','data-fxo-fhead','data-fxo-fitem','data-fxo-ffirst','data-fxo-count','data-fxo-ftop','data-fxo-empty','data-fxo-welcome','data-fxo-welcome-text','data-fxo-quiet','data-fxo-fwrap','data-fxo-st','data-fxo-mono','data-fxo-ucell','data-fxo-ubox','data-fxo-ustat','data-fxo-uname','data-fxo-usub'].forEach(function(k){e.removeAttribute(k)});
   if(e.getAttribute('aria-current')==='true')e.removeAttribute('aria-current')})};
 var signalFont=function(){   /* Signal type: Plus Jakarta Sans (UI), Bricolage Grotesque (titles), JetBrains Mono (IDs). Falls back to system fonts if blocked. */
   if(D.getElementById('fxo-signal-font'))return;
@@ -1654,7 +1675,7 @@ var SIGNAL_CSS=[
   'main.el-main :is(table,.el-table){border-collapse:collapse!important;border-spacing:0!important}',
   'main.el-main :is(.el-table__header-wrapper,.el-table__fixed-header-wrapper,.el-table__header) {background:#77008F!important}',
   'main.el-main :is(table,.el-table) th{height:34px!important;background:#77008F!important;border:0!important;color:#FFFFFF!important;font-size:10px!important;font-weight:700!important;letter-spacing:.09em!important;text-transform:uppercase!important;white-space:nowrap!important}',
-  'main.el-main :is(table,.el-table) th *:not(.el-checkbox__inner):not(.el-checkbox__inner *){color:#FFFFFF!important}',
+  'main.el-main :is(table,.el-table) th:not([data-fxo-quiet]) *:not(.el-checkbox__inner):not(.el-checkbox__inner *){color:#FFFFFF!important}',
   'main.el-main :is(table,.el-table) th .el-checkbox__inner{border-color:#FFFFFF!important;background:transparent!important}',
   'main.el-main .el-table th .sort-caret.ascending{border-bottom-color:rgba(255,255,255,.55)!important}',
   'main.el-main .el-table th .sort-caret.descending{border-top-color:rgba(255,255,255,.55)!important}',
@@ -1669,6 +1690,27 @@ var SIGNAL_CSS=[
   'main.el-main :is(table,.el-table) th[data-fxo-quiet],main.el-main :is(table,.el-table) th[data-fxo-quiet] *{color:transparent!important}',
   'main.el-main .el-table__empty-block{background:#FFFFFF!important}',
   'main.el-main .el-table__empty-text{font-size:12px!important;color:#5F73AB!important}',
+  /* rows: everything centred on one line, 60px rows, the checkbox and avatar columns tight */
+  'main.el-main :is(table,.el-table) :is(td,th){vertical-align:middle!important}',
+  'main.el-main :is(table,.el-table) td{height:60px!important}',
+  'main.el-main .el-table :is(td,th) .cell:has(>.el-checkbox:only-child),main.el-main .el-table :is(td,th).el-table-column--selection .cell{display:flex!important;align-items:center!important;justify-content:center!important;padding:0 8px!important}',
+  'main.el-main :is(table,.el-table) td :is(.el-checkbox,input[type=checkbox]){margin:0!important;vertical-align:middle!important}',
+  'main.el-main :is(table,.el-table) td .el-avatar{width:36px!important;height:36px!important;line-height:36px!important}',
+  'main.el-main :is(table,.el-table) td [data-fxo-mono]:not([data-fxo-usub]):not([data-fxo-usub] *){color:#1B2137!important;font-size:14px!important;font-variant-numeric:tabular-nums}',
+  'main.el-main :is(table,.el-table) td [data-fxo-mono=sub]:not([data-fxo-usub]):not([data-fxo-usub] *){color:#5F73AB!important;font-size:12px!important;line-height:16px!important}',
+  'main.el-main .el-table td .cell:empty::after{content:"\\2014";color:#5F73AB}',
+  /* the name cell: name + status chip on one line, ID underneath */
+  '[data-fxo-ubox]{display:flex!important;flex-wrap:wrap!important;align-items:center!important;column-gap:8px!important;row-gap:2px!important;margin:0!important;padding:0!important}',
+  '[data-fxo-ubox]>*{margin:0!important}',
+  '[data-fxo-uname],[data-fxo-uname] *{order:1;font-size:14px!important;font-weight:600!important;line-height:20px!important;color:#1B2137!important;text-transform:none!important}',
+  '[data-fxo-ustat]{order:2;display:inline-flex!important;align-items:center;flex:none;padding:0!important;background:transparent!important}',
+  '[data-fxo-ustat],[data-fxo-ustat] *{font-size:10px!important;font-weight:700!important;letter-spacing:.08em!important;text-transform:uppercase!important;line-height:16px!important;border:0!important}',
+  '[data-fxo-ustat] :not(:has(*)),[data-fxo-ustat]:not(:has(*)){padding:2px 8px!important;border-radius:4px!important}',
+  '[data-fxo-ustat=open] :not(:has(*)),[data-fxo-ustat=open]:not(:has(*)){background:rgba(21,93,252,.12)!important;color:#155DFC!important}',
+  '[data-fxo-ustat=warn] :not(:has(*)),[data-fxo-ustat=warn]:not(:has(*)){background:rgba(234,88,12,.12)!important;color:#C2410C!important}',
+  '[data-fxo-ustat=ok] :not(:has(*)),[data-fxo-ustat=ok]:not(:has(*)){background:rgba(0,105,82,.12)!important;color:#006952!important}',
+  '[data-fxo-ustat=no] :not(:has(*)),[data-fxo-ustat=no]:not(:has(*)){background:rgba(217,45,32,.12)!important;color:#D92D20!important}',
+  '[data-fxo-usub],[data-fxo-usub] *{order:3;flex:1 0 100%!important;font-size:12px!important;font-weight:400!important;line-height:16px!important;color:#5F73AB!important;font-variant-numeric:tabular-nums}',
   'main.el-main .el-tag{border:0!important;border-radius:4px!important;background:rgba(166,132,255,.14)!important;color:#77008F!important;font-size:10px!important;font-weight:700!important;letter-spacing:.08em!important;text-transform:uppercase!important;height:20px!important;line-height:20px!important;padding:0 8px!important}',
   'main.el-main .el-tag .el-tag__close{color:#77008F!important}',
   'main.el-main .el-pagination{border-top:1px solid #E6E3F1!important;padding-top:8px!important;text-align:right!important;color:#5F73AB!important}',
