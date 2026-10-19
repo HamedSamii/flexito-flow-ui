@@ -1,4 +1,4 @@
-/*! fx-omniai-unified.js · v16.8 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v16.11 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
@@ -47,7 +47,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='16.8';
+var VERSION='16.11';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -1709,9 +1709,9 @@ var WS_CSS=[
   '[data-fxo-welcome]::after{content:var(--fxo-copy-no-conversation);display:block;order:5;margin-top:18px;font-size:17px;line-height:24px;font-weight:700;color:#0A0E1A}',
   '[data-fxo-welcome-text]{order:7;margin-top:6px!important;font-size:12px!important;color:#7F848D!important}',
   '[data-fxo-welcome-text]::before{content:var(--fxo-copy-no-conversation);display:block;margin:0 auto 14px;max-width:320px;font-size:14px;line-height:21px;color:#49545A}',
-  '.rooms-container .df-sidebar{width:208px!important;min-width:168px!important;flex:0 1 208px!important}',
-  '.rooms-container{width:auto!important;max-width:none!important;flex:0 1 auto!important;min-width:0!important}',
-  '.rooms-container>.w-100{width:330px!important;min-width:250px!important;flex:0 1 330px!important}',
+  '.rooms-container .df-sidebar{width:208px!important;min-width:208px!important;flex:0 0 208px!important}',
+  '.rooms-container{width:auto!important;max-width:none!important;flex:0 0 auto!important}',
+  '.rooms-container>.w-100{width:330px!important;flex:0 0 330px!important}',
   '[data-fxo-fhead]+[data-fxo-fhead]{margin-top:0!important}',
   /* -- list header lines up with the rail header (one 52px header band across the panes) -- */
   '.rooms-container .filter-border-b{min-height:52px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;border-bottom:1px solid #EEF1F6!important}',
@@ -1950,9 +1950,15 @@ X .fx-list [data-fxo-frow]>:not([data-fxo-fname]),X .fx-list [data-fxo-frow]>:no
 X .fx-list [data-fxo-frow]>:last-child{margin-inline-start:auto!important}
 
 /* ---- conversation: side panel gets its own column, the header stays on one line (tagged by convJob) ---- */
-X .col-messages{min-width:0}
+X .col-messages{flex:1 1 0%!important;min-width:0}
+/* the left panes keep their width while there is room; when the chat column runs short they shrink first,
+   and if the chat column is still under 300px the filter rail steps aside (data-fxo-tight, set by convJob) */
+X .rooms-container{flex-shrink:1!important;min-width:auto!important}
+X .rooms-container .df-sidebar{flex:0 1 208px!important;min-width:168px!important}
+X .rooms-container>.w-100{flex:0 1 330px!important;min-width:250px!important}
+X .rooms-container[data-fxo-tight] .df-sidebar{display:none!important}
 X [data-fxo-crow="1"]{display:flex!important;flex-wrap:nowrap!important;min-width:0!important}
-X [data-fxo-crow="1"]>[data-fxo-cmain]{flex:1 1 auto!important;min-width:320px!important;width:auto!important;max-width:none!important}
+X [data-fxo-crow="1"]>[data-fxo-cmain]{flex:1 1 auto!important;min-width:var(--fxo-cmin,320px)!important;width:auto!important;max-width:none!important}
 X [data-fxo-crow="1"]>[data-fxo-cside]{flex:0 1 360px!important;width:360px!important;min-width:260px!important;max-width:46%!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important}
 X [data-fxo-crow^="ov"]{box-sizing:border-box!important}
 X [data-fxo-crow="ov-e"]{padding-inline-end:var(--fxo-csw)!important}
@@ -1965,7 +1971,7 @@ X [data-fxo-chead]>:not([data-fxo-cname]):not(button):not(.el-button):not(.el-av
 X [data-fxo-chead] :is(.el-button,button){white-space:nowrap!important}
 `).replace(/(^|\n|,)XR(?= )/g,'$1'+XRP).replace(/(^|\n|,)X(?= )/g,'$1'+XP);
 
-var FX_ATTRS=['data-fxo-aibtn','data-fxo-acts','data-fxo-actrow','data-fxo-actitem','data-fxo-iconbtn','data-fxo-sqb','data-fxo-sqi','data-fxo-sqm','data-fxo-ltr','data-fxo-frow','data-fxo-fname','data-fxo-crow','data-fxo-cmain','data-fxo-cside','data-fxo-chead','data-fxo-cname'];
+var FX_ATTRS=['data-fxo-tight','data-fxo-aibtn','data-fxo-acts','data-fxo-actrow','data-fxo-actitem','data-fxo-iconbtn','data-fxo-sqb','data-fxo-sqi','data-fxo-sqm','data-fxo-ltr','data-fxo-frow','data-fxo-fname','data-fxo-crow','data-fxo-cmain','data-fxo-cside','data-fxo-chead','data-fxo-cname'];
 var NEWSET=function(){return typeof WeakSet!=='undefined'?new WeakSet():{has:function(){return false},add:function(){}}};
 var SQ_SEEN=NEWSET();
 /* one throttle for the jobs below: at most one run per `ms`, plus a trailing run */
@@ -2066,7 +2072,7 @@ var sqJob=function(){
 var convState={t:0,q:0};
 var convClear=function(){
   [].forEach.call(D.querySelectorAll('[data-fxo-crow],[data-fxo-cmain],[data-fxo-cside]'),function(e){
-    ['data-fxo-crow','data-fxo-cmain','data-fxo-cside'].forEach(function(k){e.removeAttribute(k)});e.style.removeProperty('--fxo-csw');
+    ['data-fxo-crow','data-fxo-cmain','data-fxo-cside'].forEach(function(k){e.removeAttribute(k)});e.style.removeProperty('--fxo-csw');e.style.removeProperty('--fxo-cmin');
   });
 };
 var convJob=function(){
@@ -2077,12 +2083,12 @@ var convJob=function(){
   if(!col)return;
   var ta=col.querySelector('textarea');
   if(ta&&shown(ta)&&!D.querySelector('[data-fxo-cside]')){
-    var stop=col.closest('.chat-container')||(col.parentElement&&col.parentElement.parentElement)||D.body;
+    var stop=col.closest('main.el-main,#team-main')||D.body;   /* the panel can sit beside the whole chat area, not only beside the chat column */
     for(var a=ta;a&&a.parentElement&&a!==stop;a=a.parentElement){
       var p=a.parentElement,ra=rc(a);
       var b=[].filter.call(p.children,function(c){
         if(c===a||!shown(c)||c.contains(ta))return false;
-        if(c.matches('.rooms-container,.df-sidebar')||c.querySelector('.rooms-container,.room-item,.df-sidebar'))return false;
+        if(c.matches('aside,nav,#team-aside,#flowbuilder-aside,.rooms-container,.df-sidebar')||c.querySelector('.rooms-container,.room-item,.df-sidebar'))return false;
         var r=rc(c);if(r.width<220||r.height<ra.height*.5)return false;
         if(r.top>=ra.bottom||r.bottom<=ra.top)return false;            /* above / below: header or message list */
         return Math.abs((r.left+r.right)/2-(ra.left+ra.right)/2)>100;    /* beside the composer column */
@@ -2093,12 +2099,28 @@ var convJob=function(){
         if(pos==='absolute'||pos==='fixed'){
           var host=b.offsetParent||p;
           host.style.setProperty('--fxo-csw',Math.round(rb.width)+'px');host.setAttribute('data-fxo-crow',endSide?'ov-e':'ov-s');b.setAttribute('data-fxo-cside','ov');
-        }else{p.setAttribute('data-fxo-crow','1');b.setAttribute('data-fxo-cside','1')}
+        }else{
+          p.setAttribute('data-fxo-crow','1');b.setAttribute('data-fxo-cside','1');
+          /* the chat column inside the main column must keep >= 320px: reserve what sits beside it there
+             (conversation list etc., counted at its own minimum width when it can shrink) */
+          if(a!==col&&a.contains(col)){
+            var rooms=a.querySelector('.rooms-container'),others=rc(a).width-rc(col).width;
+            if(rooms&&a.contains(rooms))others-=Math.max(0,rc(rooms).width-430);
+            a.style.setProperty('--fxo-cmin',Math.round(Math.max(300,others+300))+'px');
+          }
+        }
         a.setAttribute('data-fxo-cmain','1');
         break;
       }
       if(p===stop)break;
     }
+  }
+  /* chat column too narrow (side panel open, small screen): hide the filter rail until there is room again */
+  var rooms=D.querySelector('#spark-app .rooms-container');
+  if(rooms){
+    var cw=rc(col).width,tight=rooms.hasAttribute('data-fxo-tight');
+    if(!tight&&cw>0&&cw<290)rooms.setAttribute('data-fxo-tight','1');
+    else if(tight&&cw>=480)rooms.removeAttribute('data-fxo-tight');
   }
   /* header: the row at the top of the chat column that holds its buttons */
   if(!D.querySelector('[data-fxo-chead]')){
@@ -2144,7 +2166,7 @@ var fixUndo=function(){
   var q='['+FX_ATTRS.join('],[')+']';
   [].forEach.call(D.querySelectorAll(q),function(e){
     FX_ATTRS.forEach(function(k){e.removeAttribute(k)});
-    ['--fxo-sqm','--fxo-sqh','--fxo-csw'].forEach(function(v){e.style.removeProperty(v)});
+    ['--fxo-sqm','--fxo-sqh','--fxo-csw','--fxo-cmin'].forEach(function(v){e.style.removeProperty(v)});
   });
   [].forEach.call(D.querySelectorAll('td'),function(td){td.__fxoAct=null});
   SQ_SEEN=NEWSET();PRO_SEEN=NEWSET();
@@ -2198,7 +2220,7 @@ var schedule=function(){
 var onHash=function(){clearTimeout(S.t);S.t=0;cancelAnimationFrame(S.q);S.q=0;apply()};
 
 var buildCSS=function(){
-  return 'html.fxo body [data-fxo-pro][data-fxo-pro],html.fxo body #spark-app#spark-app [data-fxo-pro][data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-pro-pseudo*=before]::before,html.fxo [data-fxo-pro-pseudo*=after]::after{display:none!important;content:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS+'\n'+WS_CSS+'\n'+SIGNAL_CSS+'\n'+I18N_CSS+'\n'+FIX_CSS+'\n'+'@media (max-width:1280px){html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container .df-sidebar{width:184px!important;min-width:160px!important;flex:0 1 184px!important}html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container>.w-100{width:290px!important;min-width:240px!important;flex:0 1 290px!important}}';
+  return 'html.fxo body [data-fxo-pro][data-fxo-pro],html.fxo body #spark-app#spark-app [data-fxo-pro][data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-pro-pseudo*=before]::before,html.fxo [data-fxo-pro-pseudo*=after]::after{display:none!important;content:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS+'\n'+WS_CSS+'\n'+SIGNAL_CSS+'\n'+I18N_CSS+'\n'+FIX_CSS+'\n'+'@media (max-width:1280px){html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container .df-sidebar{width:184px!important;min-width:184px!important;flex:0 0 184px!important}html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container>.w-100{width:290px!important;flex:0 0 290px!important}}';
 };
 
 var on=function(){
@@ -2211,7 +2233,7 @@ var on=function(){
   S.mo=new MutationObserver(schedule);
   S.mo.observe(D.body,{childList:true,subtree:true,attributes:true,attributeFilter:['placeholder','data-placeholder']});
   S.mo.observe(H,{attributes:true,attributeFilter:['lang','dir']});   /* placeholder: Reply/Note switch in the Inbox composer */   /* body, not #spark-app: survives Vue replacing the mount element */
-  W.addEventListener('hashchange',onHash);
+  W.addEventListener('hashchange',onHash);W.addEventListener('resize',schedule);
   apply();
   return 'on';
 };
@@ -2219,7 +2241,7 @@ var off=function(){
   if(!S.on)return 'already off';
   S.on=false;
   try{S.mo&&S.mo.disconnect()}catch(e){}
-  W.removeEventListener('hashchange',onHash);
+  W.removeEventListener('hashchange',onHash);W.removeEventListener('resize',schedule);
   clearTimeout(S.t);cancelAnimationFrame(S.q);S.t=S.q=0;
   try{CANVAS.stop()}catch(e){}
   try{INSIGHTS.undo()}catch(e){}
