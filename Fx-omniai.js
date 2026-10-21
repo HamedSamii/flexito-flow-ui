@@ -1,8 +1,11 @@
-/*! fx-omniai-unified.js · v16.14 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v16.15 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
  * never touches portal.css, never sets or removes html.in-iframe.
+ *
+ * v16.15 (21 Oct 2026)
+ *   - The "Ticket API" dialog title reads "Mini-CRM" (renameJob; restored by off()).
  *
  * v16.14 (19 Oct 2026)
  *   - Section headers with a count badge and a chevron (e.g. Orders in the contact panel) stay one row; only a plain
@@ -73,7 +76,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='16.14';
+var VERSION='16.15';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -2316,6 +2319,19 @@ var fixUndo=function(){
   SQ_SEEN=NEWSET();PRO_SEEN=NEWSET();
 };
 
+/* Dialog title "Ticket API" -> "Mini-CRM". The dialog is re-created on every open; the engine's one observer re-runs this,
+   so no second observer is needed. Only the text node is edited (Vue keeps its reference); off() restores it. */
+var RENAME_FROM='Ticket API',RENAME_TO='Mini-CRM';
+var renameJob=function(){
+  [].forEach.call(D.querySelectorAll('.el-dialog__header div'),function(el){
+    if(el.childElementCount||(el.textContent||'').trim()!==RENAME_FROM)return;
+    var n=el.firstChild;
+    if(!n||n.nodeType!==3)return;
+    el.setAttribute('data-fxo-renamed',n.nodeValue);
+    n.nodeValue=RENAME_TO;
+  });
+};
+
 var apply=function(){
   S.t=0;S.last=Date.now();
   if(!S.on)return;
@@ -2341,6 +2357,7 @@ var apply=function(){
   try{proJob()}catch(e){log('pro',e)}
   try{wsJob()}catch(e){log('ws',e)}
   try{hideItemsJob()}catch(e){log('hideitems',e)}
+  try{renameJob()}catch(e){log('rename',e)}
   try{contactsToolsJob()}catch(e){log('contacts',e)}
   try{launchJob()}catch(e){log('launch',e)}
   try{wsTabsJob()}catch(e){log('wstabs',e)}
@@ -2400,6 +2417,7 @@ var off=function(){
   try{noteUndo()}catch(e){}
   try{wsUndo()}catch(e){}
   [].forEach.call(D.querySelectorAll('[data-fxo-hideitem]'),function(h){var o=(h.getAttribute('data-fxo-hideitem')||'|').split('|');if(o[0])h.style.setProperty('display',o[0],o[1]);else h.style.removeProperty('display');h.removeAttribute('data-fxo-hideitem')});
+  [].forEach.call(D.querySelectorAll('[data-fxo-renamed]'),function(el){var n=el.firstChild;if(n&&n.nodeType===3&&n.nodeValue===RENAME_TO)n.nodeValue=el.getAttribute('data-fxo-renamed');el.removeAttribute('data-fxo-renamed')});
   [].forEach.call(D.querySelectorAll('[data-fxo-ch],[data-fxo-sum],[data-fxo-ico],[data-fxo-icobox],[data-fxo-head]'),function(e){['data-fxo-ch','data-fxo-sum','data-fxo-ico','data-fxo-icobox','data-fxo-head'].forEach(function(k){e.removeAttribute(k)})});
   [].forEach.call(D.querySelectorAll('[data-fxo-wstabs]'),function(u){var o=u.getAttribute('data-fxo-wstabs');if(o)u.style.setProperty('display',o);else u.style.removeProperty('display');u.removeAttribute('data-fxo-wstabs')});
   [].forEach.call(D.querySelectorAll('[data-fxo-bottoggle]'),function(b){b.style.removeProperty('display');b.removeAttribute('data-fxo-bottoggle')});S.bot=false;
