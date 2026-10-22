@@ -1,8 +1,11 @@
-/*! fx-omniai-unified.js · v16.15 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v16.16 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
  * never touches portal.css, never sets or removes html.in-iframe.
+ *
+ * v16.16 (22 Oct 2026)
+ *   - Login / password-reset pages are left alone: the script no longer restyles them, so the product's own dark login stays as it is.
  *
  * v16.15 (21 Oct 2026)
  *   - The "Ticket API" dialog title reads "Mini-CRM" (renameJob; restored by off()).
@@ -76,7 +79,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='16.15';
+var VERSION='16.16';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -1369,6 +1372,14 @@ var ROUTES=[
   [/^#\/(setting|ai_hub\/ai_settings|ai_hub\/ai_call_config)/,'settings'],
   [/^#\/flows/,'bots']
 ];
+/* Login / register / password-reset pages (they live outside the app shell). The design language is for the app, not for these:
+   on them the script keeps out and removes its html.fxo switch, so every rule goes quiet and the product's own login shows. */
+var authPage=function(){
+  var shell=D.querySelector('#team-main,main.el-main,main#flowbuilder-main,.main-flow-builder,.el-aside-wrapper,.df-sidebar');
+  if(shell)return false;
+  if(/^\/(?:login|register|password|forgot|reset|two-factor|auth)(?:[/?#.]|$)/i.test(location.pathname))return true;
+  return !!D.querySelector('input[type=password]');
+};
 var pageOf=function(){
   var h=location.hash||'';
   if(/^\/flow\//.test(location.pathname)&&(!h||h==='#'||h==='#/'||/^#\/flow(?:[/?]|$)/.test(h)))return 'canvas';
@@ -2336,6 +2347,10 @@ var apply=function(){
   S.t=0;S.last=Date.now();
   if(!S.on)return;
   if(urlOff()){off();return}
+  if(authPage()){
+    if(H.classList.contains('fxo')){H.classList.remove('fxo','fxo-icons','fxo-ai-agent','fxo-rtl');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');H.removeAttribute('data-fxo-locale');S.page=''}
+    return;
+  }
   if(!H.classList.contains('fxo'))H.classList.add('fxo');
   var rtl=rtlOf(),loc=localeOf();
   if(H.classList.contains('fxo-rtl')!==rtl)H.classList.toggle('fxo-rtl',rtl);
@@ -2456,7 +2471,7 @@ var check=function(){
 };
 
 W.fxOmni={version:VERSION,on:on,off:off,check:check,
-  info:function(){return {version:VERSION,on:S.on,page:S.page,hash:location.hash,embedded:H.classList.contains('in-iframe'),locale:localeOf(),direction:rtlOf()?'rtl':'ltr',legacyNeutralised:LEG.present,canvasLoop:CANVAS.running(),inbox:INBOX.info(),noteFields:noteState.fields,notePainted:noteState.painted}},
+  info:function(){return {version:VERSION,on:S.on,auth:authPage(),page:S.page,hash:location.hash,embedded:H.classList.contains('in-iframe'),locale:localeOf(),direction:rtlOf()?'rtl':'ltr',legacyNeutralised:LEG.present,canvasLoop:CANVAS.running(),inbox:INBOX.info(),noteFields:noteState.fields,notePainted:noteState.painted}},
   preview:function(){return on()}};
 
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',on,{once:true});else on();
