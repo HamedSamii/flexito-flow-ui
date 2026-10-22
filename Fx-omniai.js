@@ -1,8 +1,26 @@
-/*! fx-omniai-unified.js · v16.16 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
+/*! fx-omniai-unified.js · v16.17 · 360 design language · Flexito OmniAI "Floating Studio" (desktop) — production palette unchanged
  *
  * ONE file that replaces fx-flow.js + fx-channels.js. Styling and light DOM tagging only:
  * it never clicks product actions (except the existing All Bots list-view choice), never changes data,
  * never touches portal.css, never sets or removes html.in-iframe.
+ *
+ * v16.17 (22 Oct 2026) · Mini-CRM
+ *   - Option colours: tags with a configured colour (indigo, blue, cyan, pink, green, gray, purple, orange, brown …)
+ *     keep the product's colour; the generic purple tag colour only covers plain tags. Semantic success / info /
+ *     warning / danger tags are unchanged.
+ *   - Mini-CRM dialogs that Element mounts on <body> (Views, List Fields, Options, Select Contact …) get the same
+ *     dialog frame and form controls as dialogs inside #spark-app, on the Mini-CRM routes only.
+ *   - List Fields: fixed table layout that fills the dialog; Name gets the free width, row actions stay pinned at the
+ *     end and visible while the table scrolls; the preview moves under the table when the dialog is narrow.
+ *   - Board: stage columns are neutral with the stage's own colour as a top bar and a dot by the title; cards are no
+ *     longer cut at the column edge: the column's hidden native scrollbar is switched off instead of pushed aside
+ *     by a gutter that never matched the thin scrollbar (LTR and RTL); Element's own scrollbar still scrolls.
+ *   - Board toolbar: one height (40px), one 8px spacing, search field wide enough for its placeholder with a square
+ *     search button; input groups the product keeps LTR inside RTL pages get matching corners.
+ *   - Mini-CRM textareas with a character counter keep the counter above the text (no overlap, RTL included).
+ *   - Icon-only Mini-CRM buttons get an accessible name (EN/AR/HE) where the product has none.
+ *   - fxOmni.check() reports these regressions (tag colours, cut cards, stage fills, unstyled body dialogs,
+ *     List Fields widths/actions, toolbar heights, cut search placeholder, unnamed icon buttons).
  *
  * v16.16 (22 Oct 2026)
  *   - Login / password-reset pages are left alone: the script no longer restyles them, so the product's own dark login stays as it is.
@@ -79,7 +97,7 @@
 (function(){
 'use strict';
 var W=window,D=document,H=D.documentElement;
-var VERSION='16.16';
+var VERSION='16.17';
 if(W.fxOmni&&W.fxOmni.version){
   if(W.fxOmni.version===VERSION){W.fxOmni.on();return}
   /* a different build is running: switch it off cleanly, then this copy takes over */
@@ -587,7 +605,7 @@ html.fxo body .el-transfer-panel__header{background:var(--fxo-surface-2)!importa
 /* ---- PRODUCT COLOURS (unchanged): the exact button / status / selection colours production shows today.
    Copied from the old fx-flow.js core layer (primary #A684FF, success #24E4BB, danger #FE4E51, status tints),
    which is what users currently see; same pages as before (not on the flow canvas or Sub Flows). ---- */
-var PRODUCT_CSS=rewrite(".el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info){background:#fff!important;border-color:#E6EAF2!important;color:#0A0E1A!important}\n.el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info):hover,.el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info):focus{background:#F6F2FF!important;border-color:#A684FF!important;color:#6D4AE0!important}\n.el-button--primary{background:#A684FF!important;border-color:#A684FF!important;color:#fff!important}\n.el-button--success{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}\n.el-button--primary:hover,.el-button--primary:focus{background:#8F66F2!important;border-color:#8F66F2!important}\n.el-button--success:hover{background:#1DD3AB!important;border-color:#1DD3AB!important}\n.el-button--danger{background:#FE4E51!important;border-color:#FE4E51!important;color:#fff!important}\n.el-input__inner:focus,.el-textarea__inner:focus,.el-select .el-input.is-focus .el-input__inner{border-color:#24E4BB!important;box-shadow:0 0 0 3px rgba(36,228,187,.2)!important}\n.alert-warning{background:#FFF7E6!important;color:#8A5A00!important}\n.alert-info{background:#EDF5FF!important;color:#2F6FD1!important}\n.alert-success{background:#E9FCF8!important;color:#057A5E!important}\n.alert-danger{background:#FFECEC!important;color:#D63A3D!important}\n.badge-secondary{background:#EEF1F6!important;color:#7F848D!important}\n.badge-info{background:#EDF5FF!important;color:#2F6FD1!important}\n.badge-success{background:#E9FCF8!important;color:#057A5E!important}\n.badge-warning{background:#FEF3ED!important;color:#C2570C!important}\n.badge-danger{background:#FFECEC!important;color:#D63A3D!important}\n.el-tabs__active-bar{background:linear-gradient(90deg,#24E4BB,#A684FF)!important}\n.el-pagination.is-background .el-pager li:not(.disabled).active{background:#A684FF!important;color:#fff!important}\n.el-switch__core{background:#D7DEEA!important;border-color:transparent!important}\n.el-switch.is-checked .el-switch__core{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-checkbox__input.is-checked .el-checkbox__inner,.el-checkbox__input.is-indeterminate .el-checkbox__inner{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-checkbox__input.is-checked .el-checkbox__inner::after{border-color:#04241D!important}\n.el-radio__input.is-checked .el-radio__inner{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-radio__input.is-checked .el-radio__inner::after{background:#04241D!important}\n.el-tag{background:#F6F2FF!important;color:#6D4AE0!important}\n.el-tag--success{background:#E9FCF8!important;color:#057A5E!important}\n.el-tag--info{background:#EDF5FF!important;color:#2F6FD1!important}\n.el-tag--warning{background:#FEF3ED!important;color:#C2570C!important}\n.el-tag--danger{background:#FFECEC!important;color:#D63A3D!important}\n.el-loading-spinner .path{stroke:#24E4BB!important}\n.el-picker-panel__icon-btn:hover,.el-date-table td.available:hover,.el-date-table td.today span{color:#057A5E!important}\n.el-date-table td.current:not(.disabled) span,.el-date-table td.selected span,.el-year-table td.current .cell,.el-month-table td.current .cell{background:#24E4BB!important;color:#04241D!important}\n.el-time-panel,.el-time-spinner__item.active:not(.disabled){color:#057A5E!important}\n.el-message{background:#fff!important}\n.el-message--success{background:#E7FBF6!important;border-color:#BEF0E1!important;color:#057A5E!important}\n.el-message--error{background:#FFECEC!important;border-color:#FCC!important;color:#D63A3D!important}\n.el-message--warning{background:#FEF3ED!important;border-color:#FBD8B8!important;color:#C2570C!important}\n.el-upload-dragger:hover{border-color:#24E4BB!important;background:#F1FDFA!important}\n.el-progress-bar__inner{background:#24E4BB!important}\n.el-progress__text,.el-progress.is-success .el-progress__text{color:#057A5E!important}\n.el-slider__bar{background:#24E4BB!important}\n.el-slider__button{border-color:#24E4BB!important}\n.el-rate__icon.is-selected,.el-rate__icon.is-active{color:#24E4BB!important}\n.el-steps--simple{background:#F7FAFF!important}\n.el-step__head.is-process,.el-step__head.is-finish{color:#057A5E!important;border-color:#24E4BB!important}\n.el-step__icon.is-text{border-color:inherit!important}\n.el-step__line-inner{border-color:#24E4BB!important}\n.el-collapse-item__header.is-active{color:#057A5E!important}\n.el-timeline-item__node--normal{background:#24E4BB!important}\n.el-carousel__indicator.is-active button{background:#24E4BB!important}",function(s){
+var PRODUCT_CSS=rewrite(".el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info){background:#fff!important;border-color:#E6EAF2!important;color:#0A0E1A!important}\n.el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info):hover,.el-button--default:not(.el-button--primary):not(.el-button--success):not(.el-button--danger):not(.el-button--warning):not(.el-button--info):focus{background:#F6F2FF!important;border-color:#A684FF!important;color:#6D4AE0!important}\n.el-button--primary{background:#A684FF!important;border-color:#A684FF!important;color:#fff!important}\n.el-button--success{background:#24E4BB!important;border-color:#24E4BB!important;color:#04241D!important}\n.el-button--primary:hover,.el-button--primary:focus{background:#8F66F2!important;border-color:#8F66F2!important}\n.el-button--success:hover{background:#1DD3AB!important;border-color:#1DD3AB!important}\n.el-button--danger{background:#FE4E51!important;border-color:#FE4E51!important;color:#fff!important}\n.el-input__inner:focus,.el-textarea__inner:focus,.el-select .el-input.is-focus .el-input__inner{border-color:#24E4BB!important;box-shadow:0 0 0 3px rgba(36,228,187,.2)!important}\n.alert-warning{background:#FFF7E6!important;color:#8A5A00!important}\n.alert-info{background:#EDF5FF!important;color:#2F6FD1!important}\n.alert-success{background:#E9FCF8!important;color:#057A5E!important}\n.alert-danger{background:#FFECEC!important;color:#D63A3D!important}\n.badge-secondary{background:#EEF1F6!important;color:#7F848D!important}\n.badge-info{background:#EDF5FF!important;color:#2F6FD1!important}\n.badge-success{background:#E9FCF8!important;color:#057A5E!important}\n.badge-warning{background:#FEF3ED!important;color:#C2570C!important}\n.badge-danger{background:#FFECEC!important;color:#D63A3D!important}\n.el-tabs__active-bar{background:linear-gradient(90deg,#24E4BB,#A684FF)!important}\n.el-pagination.is-background .el-pager li:not(.disabled).active{background:#A684FF!important;color:#fff!important}\n.el-switch__core{background:#D7DEEA!important;border-color:transparent!important}\n.el-switch.is-checked .el-switch__core{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-checkbox__input.is-checked .el-checkbox__inner,.el-checkbox__input.is-indeterminate .el-checkbox__inner{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-checkbox__input.is-checked .el-checkbox__inner::after{border-color:#04241D!important}\n.el-radio__input.is-checked .el-radio__inner{background:#24E4BB!important;border-color:#24E4BB!important}\n.el-radio__input.is-checked .el-radio__inner::after{background:#04241D!important}\n.el-tag:not(:where(.el-tag--indigo,.el-tag--blue,.el-tag--cyan,.el-tag--pink,.el-tag--green,.el-tag--gray,.el-tag--grey,.el-tag--purple,.el-tag--orange,.el-tag--brown,.el-tag--red,.el-tag--yellow,.el-tag--teal,.el-tag--lime,.el-tag--amber)){background:#F6F2FF!important;color:#6D4AE0!important}\n.el-tag--success{background:#E9FCF8!important;color:#057A5E!important}\n.el-tag--info{background:#EDF5FF!important;color:#2F6FD1!important}\n.el-tag--warning{background:#FEF3ED!important;color:#C2570C!important}\n.el-tag--danger{background:#FFECEC!important;color:#D63A3D!important}\n.el-loading-spinner .path{stroke:#24E4BB!important}\n.el-picker-panel__icon-btn:hover,.el-date-table td.available:hover,.el-date-table td.today span{color:#057A5E!important}\n.el-date-table td.current:not(.disabled) span,.el-date-table td.selected span,.el-year-table td.current .cell,.el-month-table td.current .cell{background:#24E4BB!important;color:#04241D!important}\n.el-time-panel,.el-time-spinner__item.active:not(.disabled){color:#057A5E!important}\n.el-message{background:#fff!important}\n.el-message--success{background:#E7FBF6!important;border-color:#BEF0E1!important;color:#057A5E!important}\n.el-message--error{background:#FFECEC!important;border-color:#FCC!important;color:#D63A3D!important}\n.el-message--warning{background:#FEF3ED!important;border-color:#FBD8B8!important;color:#C2570C!important}\n.el-upload-dragger:hover{border-color:#24E4BB!important;background:#F1FDFA!important}\n.el-progress-bar__inner{background:#24E4BB!important}\n.el-progress__text,.el-progress.is-success .el-progress__text{color:#057A5E!important}\n.el-slider__bar{background:#24E4BB!important}\n.el-slider__button{border-color:#24E4BB!important}\n.el-rate__icon.is-selected,.el-rate__icon.is-active{color:#24E4BB!important}\n.el-steps--simple{background:#F7FAFF!important}\n.el-step__head.is-process,.el-step__head.is-finish{color:#057A5E!important;border-color:#24E4BB!important}\n.el-step__icon.is-text{border-color:inherit!important}\n.el-step__line-inner{border-color:#24E4BB!important}\n.el-collapse-item__header.is-active{color:#057A5E!important}\n.el-timeline-item__node--normal{background:#24E4BB!important}\n.el-carousel__indicator.is-active button{background:#24E4BB!important}",function(s){
   var C='html.fxo:not([data-fxo-page=canvas]):not([data-fxo-page=subflows]) body';
   return C+' #spark-app#spark-app '+s+','+C+' '+s;
 });
@@ -2330,6 +2348,175 @@ var fixUndo=function(){
   SQ_SEEN=NEWSET();PRO_SEEN=NEWSET();
 };
 
+/* ===================================================================================== */
+/* 5h. MINI-CRM (v16.17): list page (#/tickets), board page (#/chat/lists) and the dialogs */
+/*     those pages mount on <body>, outside #spark-app (Views, List Fields, Options …).     */
+/* ===================================================================================== */
+/* Scope: the two Mini-CRM routes only. Page rules carry six ids so they outrank FIX_CSS (five); dialog rules
+   reach the wrappers Element mounts on <body>, with the same weight through :not(#…×6). */
+var CRM_RT=':is([data-fxo-route="tickets"],[data-fxo-route="chat/lists"])';
+var CRM_PG='html.fxo'+CRM_RT+' body #spark-app#spark-app#spark-app#spark-app#spark-app#spark-app';
+var CRM_DG='html.fxo'+CRM_RT+' body>.el-dialog__wrapper:not(#fxo-1#fxo-2#fxo-3#fxo-4#fxo-5#fxo-6)';
+var CRM_PGR=CRM_PG.replace('html.fxo','html.fxo.fxo-rtl'),CRM_DGR=CRM_DG.replace('html.fxo','html.fxo.fxo-rtl');
+/* K / KR = page + dialogs, D / DR = body dialogs only. Each rule is written once with "K " and expanded per prefix. */
+var crmRule=function(line){
+  var m=line.match(/^(KR|K|DR|D) ([^{]+)\{([\s\S]*)$/);if(!m)return line;
+  var pre=m[1]==='K'?[CRM_PG,CRM_DG]:m[1]==='KR'?[CRM_PGR,CRM_DGR]:m[1]==='D'?[CRM_DG]:[CRM_DGR];
+  var sels=m[2].split(/,(?![^(]*\))/).map(function(s){return s.trim().replace(/^(KR|K|DR|D) /,'')});
+  var out=[];pre.forEach(function(p){sels.forEach(function(s){out.push(p+' '+s)})});
+  return out.join(',')+'{'+m[3];
+};
+/* the dialog frame and form controls the page dialogs already get (DESIGN, "S" scope), re-used for the
+   Mini-CRM dialogs on <body>; page-level rules (rails, row cards, menus) are not copied */
+var CRM_DLG_FROM_DESIGN=function(){
+  return DESIGN.split('\n').filter(function(l){
+    return /^S \.(el-dialog|el-button|el-input|el-textarea|form-control|el-form|el-checkbox|el-radio|el-tag|el-pagination|btn\b|el-table th|el-table \.cell|el-table__empty)/.test(l);
+  }).map(function(l){return l.replace(/(^|,)S (?=\.)/g,'$1D ')}).map(function(l){
+    var i=l.indexOf('{');var sel=l.slice(0,i),body=l.slice(i);
+    return sel.split(/,(?![^(]*\))/).map(function(s){return CRM_DG+' '+s.trim().replace(/^D /,'')}).join(',')+body;
+  }).join('\n');
+};
+var CRM_CSS_SRC=`
+K .kanban-column[class*="bg-field-"]{background:#F7F8FA!important;box-shadow:inset 0 0 0 1px var(--fxo-border)!important;position:relative!important;overflow:hidden!important;overflow:clip!important}
+K .kanban-column[class*="bg-field-"]>:first-child>[class*="text-field-"]{display:inline-flex!important;align-items:center!important;gap:6px!important;min-width:0}
+K .kanban-column[class*="bg-field-"]>:first-child>[class*="text-field-"]::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:currentColor}
+K .kanban-column[class*="bg-field-"]>:first-child>[class*="text-field-"]::after{content:"";position:absolute;top:0;inset-inline:0;height:4px;background:currentColor;pointer-events:none}
+K .kanban-column[class*="bg-field-"] .kanban-list-item{box-shadow:0 0 0 1px var(--fxo-border),var(--fxo-e0)!important}
+K .kanban-column .el-scrollbar__wrap[style*="overflow-x: hidden"]{scrollbar-width:none!important;margin-left:0!important;margin-right:0!important}
+K .kanban-column .el-scrollbar__wrap[style*="overflow-x: hidden"]::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+K .kanban-column[class*="bg-field-"]>.el-scrollbar{margin-inline-end:-8px!important}
+K .kanban-column[class*="bg-field-"]>.el-scrollbar>.el-scrollbar__wrap>.el-scrollbar__view{padding-inline-end:8px!important;box-sizing:border-box!important}
+K [data-fxo-crmbar]{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;min-width:0!important}
+K [data-fxo-crmbar]>*{margin-inline:0!important;margin-left:0!important;margin-right:0!important}
+K [data-fxo-crmbar]>.ml-auto.ml-auto{margin-inline-start:auto!important}
+K [data-fxo-crmbar] .el-button{height:40px!important;min-height:40px!important}
+K [data-fxo-crmbar] .el-input-group{max-width:300px!important;width:auto!important;min-width:176px!important;flex:1 1 260px!important}
+K [data-fxo-crmbar]>.el-select{flex:0 1 180px!important;min-width:120px!important}
+K [data-fxo-crmbar] .el-input-group__append{padding:0!important;width:44px!important}
+K [data-fxo-crmbar] .el-input-group__append .el-button{width:44px!important;height:38px!important;min-height:38px!important;padding:0!important}
+K [data-fxo-gltr=a]>.el-input__inner{border-radius:12px 0 0 12px!important}
+K [data-fxo-gltr=a]>.el-input-group__append{border-radius:0 12px 12px 0!important}
+K [data-fxo-gltr=p]>.el-input__inner{border-radius:0 12px 12px 0!important}
+K [data-fxo-gltr=p]>.el-input-group__prepend{border-radius:12px 0 0 12px!important}
+K [data-fxo-gltr=a] .el-input__suffix{transform:none!important}
+K .el-textarea:has(>.el-input__count)>.el-textarea__inner{padding-top:22px!important}
+K [data-fxo-lfrow]{flex-wrap:wrap!important;row-gap:16px!important}
+K [data-fxo-lfrow]>.el-col-17{flex:1 1 640px!important;width:auto!important;max-width:100%!important;min-width:0!important}
+K [data-fxo-lfrow]>.el-col-7{flex:0 1 340px!important;width:auto!important;max-width:100%!important;min-width:0!important}
+K [data-fxo-lf] :is(.el-table__header,.el-table__body){width:100%!important;min-width:720px!important;table-layout:fixed!important}
+K [data-fxo-lf] colgroup>col:nth-child(1){width:120px!important}
+K [data-fxo-lf] colgroup>col:nth-child(2){width:210px!important}
+K [data-fxo-lf] colgroup>col:nth-child(3){width:auto!important}
+K [data-fxo-lf] colgroup>col:nth-child(4),K [data-fxo-lf] colgroup>col:nth-child(5){width:104px!important}
+K [data-fxo-lf] colgroup>col:nth-child(6){width:64px!important}
+K [data-fxo-lf] th .cell{white-space:normal!important;word-break:normal!important;line-height:18px!important}
+K [data-fxo-lf] td:nth-child(2) .cell>div{width:100%!important;max-width:100%!important}
+K [data-fxo-lf] td:nth-child(3) .cell>*{width:100%!important;max-width:100%!important;min-width:0!important}
+K [data-fxo-lf] td:nth-child(3) .el-input{width:100%!important;flex:1 1 auto!important;min-width:0!important}
+K [data-fxo-lf] .el-input-group__append{padding:0!important;width:1%!important;white-space:nowrap!important}
+K [data-fxo-lf] .el-input-group__append>.el-button{margin:0!important;padding:0 12px!important;min-height:38px!important;height:38px!important}
+K [data-fxo-lf] :is(td,th):nth-child(6){position:sticky!important;inset-inline-end:0!important;z-index:3!important;background:var(--fxo-surface)!important}
+K [data-fxo-lf] .el-table__body tr:is(:hover,.hover-row,.current-row)>td:nth-child(6){background:#F5F7FA!important}
+K [data-fxo-lf] td:nth-child(6)>.cell{overflow:visible!important;text-overflow:clip!important;padding-inline:8px!important}
+`;
+var CRM_CSS=function(){return CRM_CSS_SRC.split('\n').map(crmRule).join('\n')+'\n@media (max-width:860px){'+crmRule('K [data-fxo-crmbar]{flex-wrap:wrap!important;row-gap:8px!important}')+'}\n'+CRM_DLG_FROM_DESIGN()};
+
+var CRM_LBL={
+  en:{more:'More actions',options:'Field options',edit:'Edit view',filter:'Filter',search:'Search',refresh:'Refresh',download:'Download',add:'Add item'},
+  ar:{more:'إجراءات إضافية',options:'خيارات الحقل',edit:'تعديل العرض',filter:'تصفية',search:'بحث',refresh:'تحديث',download:'تنزيل',add:'إضافة عنصر'},
+  he:{more:'פעולות נוספות',options:'אפשרויות שדה',edit:'עריכת תצוגה',filter:'סינון',search:'חיפוש',refresh:'רענון',download:'הורדה',add:'הוספת פריט'}
+};
+var CRM_ICO=[[/fa-ellipsis-[vh]|el-icon-more/,'more'],[/el-icon-s-tools|fa-cog|fa-sliders/,'options'],[/el-icon-edit|fa-pencil|fa-edit/,'edit'],[/fa-filter|el-icon-[a-z-]*filter/,'filter'],[/el-icon-search|fa-search/,'search'],[/el-icon-refresh|fa-refresh|fa-sync/,'refresh'],[/el-icon-download|fa-download/,'download'],[/el-icon-plus|fa-plus/,'add']];
+var crmOn=function(){return /^(tickets|chat\/lists)$/.test(H.getAttribute('data-fxo-route')||'')};
+var crmRoots=function(){
+  var r=[].slice.call(D.querySelectorAll('#spark-app'));
+  [].forEach.call(D.querySelectorAll('body>.el-dialog__wrapper'),function(w){if(w.style.display!=='none')r.push(w)});
+  return r;
+};
+var crmState={t:0,q:0};
+/* List Fields: verified by structure (code + Save, name input, two on/off columns, a row-actions menu), not by text */
+var crmIsListFields=function(t){
+  var cols=t.querySelectorAll('.el-table__header colgroup>col');if(cols.length<6)return false;
+  var row=t.querySelector('.el-table__body tr');if(!row||row.children.length<6)return false;
+  var c=row.children;
+  return !!(c[1].querySelector('.el-input-group--append button')&&c[2].querySelector('.el-input')&&(c[3].querySelector('.el-switch,i,svg')||(c[3].textContent||'').trim()==='')&&t.querySelector('.el-table__body td:nth-child(6) .el-dropdown'));
+};
+var crmJob=function(){
+  if(throttle(crmState,300,crmJob))return;
+  if(!crmOn())return;
+  var rtl=H.classList.contains('fxo-rtl'),L=CRM_LBL[localeOf()]||CRM_LBL.en;
+  crmRoots().forEach(function(root){
+    /* board toolbar: the row holding the search field and several buttons */
+    [].forEach.call(root.querySelectorAll('.el-input-group:not([data-fxo-crmseen])'),function(g){
+      g.setAttribute('data-fxo-crmseen','');
+      var bar=g.parentElement;
+      if(bar&&!bar.hasAttribute('data-fxo-crmbar')&&getComputedStyle(bar).display==='flex'&&bar.querySelectorAll(':scope>button,:scope>.el-button,:scope>*>button').length>=3)bar.setAttribute('data-fxo-crmbar','');
+    });
+    /* input groups the product forces to LTR inside an RTL page: their corners follow the physical order */
+    [].forEach.call(root.querySelectorAll('.el-input-group'),function(g){
+      var want=rtl&&getComputedStyle(g).direction==='ltr'?(g.classList.contains('el-input-group--append')?'a':g.classList.contains('el-input-group--prepend')?'p':''):'';
+      if((g.getAttribute('data-fxo-gltr')||'')!==want){if(want)g.setAttribute('data-fxo-gltr',want);else g.removeAttribute('data-fxo-gltr')}
+    });
+    /* List Fields table + the row that holds it next to the preview */
+    [].forEach.call(root.querySelectorAll('.el-table:not([data-fxo-lf])'),function(t){
+      if(!t.closest('.el-dialog')||!crmIsListFields(t))return;
+      t.setAttribute('data-fxo-lf','');
+      var row=t.closest('.el-row');if(row&&row.querySelector(':scope>.el-col-7'))row.setAttribute('data-fxo-lfrow','');
+      try{var vm=t.__vue__;if(vm&&vm.doLayout)setTimeout(function(){try{vm.doLayout()}catch(e){}},0)}catch(e){}
+    });
+    /* icon-only buttons get a name screen readers can say (only where the product gave none) */
+    [].forEach.call(root.querySelectorAll('button:not([aria-label]):not([data-fxo-aria])'),function(b){
+      if((b.textContent||'').trim()||b.title)return;
+      var i=b.querySelector('i,svg');if(!i)return;
+      var cls=(i.getAttribute('class')||'')+' '+(b.getAttribute('class')||'');
+      for(var k=0;k<CRM_ICO.length;k++)if(CRM_ICO[k][0].test(cls)){b.setAttribute('aria-label',L[CRM_ICO[k][1]]);b.setAttribute('data-fxo-aria',CRM_ICO[k][1]);break}
+    });
+  });
+};
+var crmUndo=function(){
+  [].forEach.call(D.querySelectorAll('[data-fxo-aria]'),function(b){b.removeAttribute('aria-label');b.removeAttribute('data-fxo-aria')});
+  [].forEach.call(D.querySelectorAll('[data-fxo-crmseen],[data-fxo-crmbar],[data-fxo-gltr],[data-fxo-lf],[data-fxo-lfrow]'),function(e){['data-fxo-crmseen','data-fxo-crmbar','data-fxo-gltr','data-fxo-lf','data-fxo-lfrow'].forEach(function(k){e.removeAttribute(k)})});
+};
+/* option colours the product gives custom tags; the generic tag colour must never cover them */
+var CRM_TAGS='indigo,blue,cyan,pink,green,gray,grey,purple,orange,brown,red,yellow,teal,lime,amber'.split(',');
+/* self-test additions (fxOmni.check): the regressions this release fixes */
+var crmCheck=function(r){
+  var vis=function(e){var b=e.getBoundingClientRect();return b.width>0&&b.height>0};
+  var tagSel=CRM_TAGS.map(function(c){return '.el-tag--'+c}).join(',');
+  var flat=[].filter.call(D.querySelectorAll(tagSel),function(t){if(!vis(t))return false;var cs=getComputedStyle(t);return cs.backgroundColor==='rgb(246, 242, 255)'&&cs.color==='rgb(109, 74, 224)'&&!t.classList.contains('el-tag--purple')});
+  if(flat.length)r.problems.push('option colours replaced by the generic tag colour: '+flat.length);
+  var clip=[].filter.call(D.querySelectorAll('.kanban-list-item'),function(c){if(!vis(c))return false;var sb=c.closest('.el-scrollbar');if(!sb)return false;var a=c.getBoundingClientRect(),b=sb.getBoundingClientRect();return a.right>b.right+1||a.left<b.left-1});
+  if(clip.length)r.problems.push('kanban cards cut at the column edge: '+clip.length);
+  var sat=[].filter.call(D.querySelectorAll('.kanban-column[class*="bg-field-"]'),function(c){return vis(c)&&crmOn()&&getComputedStyle(c).backgroundColor!=='rgb(247, 248, 250)'});
+  if(sat.length)r.problems.push('stage columns still filled with the stage colour: '+sat.length);
+  if(!crmOn())return;
+  [].forEach.call(D.querySelectorAll('body>.el-dialog__wrapper'),function(w){
+    if(w.style.display==='none'||!vis(w.querySelector('.el-dialog')||w))return;
+    var t=w.querySelector('.el-dialog__title');
+    if(t&&parseInt(getComputedStyle(t).fontWeight,10)<700)r.problems.push('Mini-CRM dialog outside #spark-app without the dialog design');
+    [].forEach.call(w.querySelectorAll('.el-table'),function(tb){
+      if(!crmIsListFields(tb))return;
+      if(!tb.hasAttribute('data-fxo-lf')){r.problems.push('List Fields table not recognised');return}
+      var narrow=[].filter.call(tb.querySelectorAll('.el-table__body td:nth-child(3) .el-input__inner'),function(i){return vis(i)&&i.getBoundingClientRect().width<120});
+      if(narrow.length)r.problems.push('List Fields names narrower than 120px: '+narrow.length);
+      var box=(tb.querySelector('.el-table__body-wrapper')||tb).getBoundingClientRect();
+      var hidden=[].filter.call(tb.querySelectorAll('.el-table__body td:nth-child(6) .el-dropdown'),function(d){var b=d.getBoundingClientRect();return b.right>box.right+1||b.left<box.left-1});
+      if(hidden.length)r.problems.push('List Fields row actions outside the visible table: '+hidden.length);
+    });
+  });
+  [].forEach.call(D.querySelectorAll('[data-fxo-crmbar]'),function(bar){
+    var hs=[].filter.call(bar.querySelectorAll(':scope>*'),vis).map(function(e){var x=e.matches('button,.el-button,.el-input,.el-select')?e:[].filter.call(e.querySelectorAll('button,.el-button,.el-input__inner'),vis)[0]||e;return Math.round(x.getBoundingClientRect().height)});
+    if(hs.length&&Math.max.apply(null,hs)-Math.min.apply(null,hs)>2)r.problems.push('Mini-CRM toolbar controls of different heights: '+hs.join('/'));
+    [].forEach.call(bar.querySelectorAll('.el-input-group input'),function(i){
+      if(!i.placeholder||!vis(i))return;
+      var cs=getComputedStyle(i),cv=crmCheck.cv||(crmCheck.cv=D.createElement('canvas')),cx=cv.getContext('2d');cx.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
+      if(cx.measureText(i.placeholder).width>i.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)+1)r.problems.push('Mini-CRM search placeholder cut: "'+i.placeholder+'"');
+    });
+  });
+  var unnamed=0;crmRoots().forEach(function(root){[].forEach.call(root.querySelectorAll('[data-fxo-crmbar] button,.el-dialog button'),function(b){if(vis(b)&&!(b.textContent||'').trim()&&!b.getAttribute('aria-label')&&!b.title)unnamed++})});
+  if(unnamed)r.problems.push('Mini-CRM icon buttons without a name: '+unnamed);
+};
+
 /* Dialog title "Ticket API" -> "Mini-CRM". The dialog is re-created on every open; the engine's one observer re-runs this,
    so no second observer is needed. Only the text node is edited (Vue keeps its reference); off() restores it. */
 var RENAME_FROM='Ticket API',RENAME_TO='Mini-CRM';
@@ -2373,6 +2560,7 @@ var apply=function(){
   try{wsJob()}catch(e){log('ws',e)}
   try{hideItemsJob()}catch(e){log('hideitems',e)}
   try{renameJob()}catch(e){log('rename',e)}
+  try{crmJob()}catch(e){log('crm',e)}
   try{contactsToolsJob()}catch(e){log('contacts',e)}
   try{launchJob()}catch(e){log('launch',e)}
   try{wsTabsJob()}catch(e){log('wstabs',e)}
@@ -2399,7 +2587,7 @@ var schedule=function(){
 var onHash=function(){clearTimeout(S.t);S.t=0;cancelAnimationFrame(S.q);S.q=0;apply()};
 
 var buildCSS=function(){
-  return 'html.fxo body [data-fxo-pro][data-fxo-pro],html.fxo body #spark-app#spark-app [data-fxo-pro][data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-pro-pseudo*=before]::before,html.fxo [data-fxo-pro-pseudo*=after]::after{display:none!important;content:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS+'\n'+WS_CSS+'\n'+SIGNAL_CSS+'\n'+I18N_CSS+'\n'+FIX_CSS+'\n'+'@media (max-width:1280px){html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container .df-sidebar{width:184px!important;min-width:184px!important;flex:0 0 184px!important}html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container>.w-100{width:290px!important;flex:0 0 290px!important}}';
+  return 'html.fxo body [data-fxo-pro][data-fxo-pro],html.fxo body #spark-app#spark-app [data-fxo-pro][data-fxo-pro]{display:none!important}\nhtml.fxo [data-fxo-pro-pseudo*=before]::before,html.fxo [data-fxo-pro-pseudo*=after]::after{display:none!important;content:none!important}\nhtml.fxo [data-fxo-note=field]::placeholder{color:#C2570C!important;opacity:.85!important}\n'+TOKENS+'\n'+scopeS(DESIGN)+'\n'+TEMPLATES()+'\n'+REPORTS_CSS+'\n'+CHANNEL_DETAIL_CSS+'\n'+CHOOSE_SUBFLOW_CSS+'\n'+ICONS+'\n'+CANVAS.css+'\n'+SUBFLOWS.css+'\n'+INBOX.css+'\n'+POP+'\n'+MISC+'\n'+PRODUCT_CSS+'\n'+WS_CSS+'\n'+SIGNAL_CSS+'\n'+I18N_CSS+'\n'+FIX_CSS+'\n'+CRM_CSS()+'\n'+'@media (max-width:1280px){html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container .df-sidebar{width:184px!important;min-width:184px!important;flex:0 0 184px!important}html.fxo body #spark-app#spark-app#spark-app#spark-app .rooms-container>.w-100{width:290px!important;flex:0 0 290px!important}}';
 };
 
 var on=function(){
@@ -2437,6 +2625,7 @@ var off=function(){
   [].forEach.call(D.querySelectorAll('[data-fxo-wstabs]'),function(u){var o=u.getAttribute('data-fxo-wstabs');if(o)u.style.setProperty('display',o);else u.style.removeProperty('display');u.removeAttribute('data-fxo-wstabs')});
   [].forEach.call(D.querySelectorAll('[data-fxo-bottoggle]'),function(b){b.style.removeProperty('display');b.removeAttribute('data-fxo-bottoggle')});S.bot=false;
   try{fixUndo()}catch(e){}
+  try{crmUndo()}catch(e){}
   if(S.style&&S.style.parentNode)S.style.parentNode.removeChild(S.style);
   H.classList.remove('fxo','fxo-icons','fxo-ai-agent','fxo-rtl');H.removeAttribute('data-fxo-page');H.removeAttribute('data-fxo-route');H.removeAttribute('data-fxo-locale');
   [].forEach.call(D.querySelectorAll('[data-fxo-title]'),function(e){e.removeAttribute('data-fxo-title')});
@@ -2466,6 +2655,7 @@ var check=function(){
     var items=u.querySelectorAll(':scope>li.el-menu-item');
     if(items.length>=7&&items.length<=10&&getComputedStyle(u).display!=='none')r.problems.push('duplicate workspace tabs visible');
   });
+  try{crmCheck(r)}catch(e){r.problems.push('crm check failed: '+e.message)}
   r.ok=!r.problems.length;
   return r;
 };
